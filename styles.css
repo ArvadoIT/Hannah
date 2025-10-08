@@ -1543,6 +1543,47 @@ header {
     box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
 }
 
+/* Contact CTA Section */
+.contact-cta {
+    padding: 100px 0;
+    background: linear-gradient(135deg, #f5f2ed 0%, #e8ddd4 100%);
+    text-align: center;
+}
+
+.contact-cta .section-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.contact-cta .cta-text {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.contact-cta .cta-button {
+    display: inline-block;
+    padding: 1.25rem 3rem;
+    background: var(--primary-color);
+    color: var(--white);
+    text-decoration: none;
+    border-radius: var(--radius-lg);
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.contact-cta .cta-button:hover,
+.contact-cta .cta-button:focus {
+    background: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 115, 85, 0.4);
+}
+
 /* Footer */
 .footer {
     background: #2c2c2c;
@@ -1623,6 +1664,24 @@ header {
     .contact-content {
         grid-template-columns: 1fr;
         gap: 2rem;
+    }
+    
+    .contact-cta {
+        padding: 60px 0;
+    }
+    
+    .contact-cta .section-title {
+        font-size: 2rem;
+    }
+    
+    .contact-cta .cta-text {
+        font-size: 1.1rem;
+        padding: 0 1rem;
+    }
+    
+    .contact-cta .cta-button {
+        padding: 1rem 2rem;
+        font-size: 1rem;
     }
     
     .about-niche {
