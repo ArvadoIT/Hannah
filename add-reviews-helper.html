@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Helper - Add Your Google Reviews</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #faf8f5 0%, #f5f2ed 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #8b7355;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-section {
+            background: #faf8f5;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #2c2c2c;
+            margin-bottom: 0.5rem;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e8ddd4;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .star-selector {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 2rem;
+        }
+        
+        .star-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        
+        .star-btn.active {
+            color: #fbbc04;
+        }
+        
+        .btn {
+            background: #8b7355;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #6d5a42;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 115, 85, 0.3);
+        }
+        
+        .output-section {
+            background: #2c2c2c;
+            color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+        
+        .output-section h3 {
+            color: #fbbc04;
+            margin-bottom: 1rem;
+        }
+        
+        .code-output {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .copy-btn {
+            background: #fbbc04;
+            color: #2c2c2c;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #f4b400;
+            transform: translateY(-2px);
+        }
+        
+        .instructions {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .review-preview {
+            background: white;
+            border: 2px solid #e8ddd4;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .preview-stars {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .preview-stars span {
+            color: #fbbc04;
+            font-size: 1.5rem;
+        }
+        
+        .success-message {
+            display: none;
+            background: #4caf50;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 Review Helper Tool</h1>
+        <p class="subtitle">Easily add your Google reviews to your website</p>
+        
+        <div class="instructions">
+            <strong>How to use:</strong> Fill in the form below with a review from Google, click "Generate HTML", copy the code, and paste it into your index.html file in the testimonials-grid section.
+        </div>
+        
+        <div class="form-section">
+            <div class="form-group">
+                <label for="reviewText">Review Text *</label>
+                <textarea id="reviewText" placeholder="Paste the review text from Google here..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="authorName">Reviewer Name *</label>
+                <input type="text" id="authorName" placeholder="e.g., Sarah M." required>
+            </div>
+            
+            <div class="form-group">
+                <label>Star Rating *</label>
+                <div class="star-selector" id="starSelector">
+                    <button type="button" class="star-btn" data-rating="1">★</button>
+                    <button type="button" class="star-btn" data-rating="2">★</button>
+                    <button type="button" class="star-btn" data-rating="3">★</button>
+                    <button type="button" class="star-btn" data-rating="4">★</button>
+                    <button type="button" class="star-btn" data-rating="5">★</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="reviewDate">Time Posted</label>
+                <input type="text" id="reviewDate" placeholder="e.g., 2 weeks ago, 1 month ago">
+            </div>
+            
+            <button class="btn" onclick="generateReview()">Generate HTML Code</button>
+        </div>
+        
+        <div id="previewSection" style="display: none;">
+            <h3 style="color: #8b7355; margin-bottom: 1rem;">Preview:</h3>
+            <div class="review-preview" id="reviewPreview"></div>
+        </div>
+        
+        <div id="outputSection" class="output-section" style="display: none;">
+            <h3>Generated HTML Code:</h3>
+            <div class="code-output" id="codeOutput"></div>
+            <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+            <div class="success-message" id="successMessage">✓ Code copied to clipboard!</div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedRating = 5;
+        
+        // Star rating selection
+        document.querySelectorAll('.star-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+                updateStars();
+            });
+        });
+        
+        function updateStars() {
+            document.querySelectorAll('.star-btn').forEach((btn, index) => {
+                if (index < selectedRating) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        // Initialize with 5 stars
+        updateStars();
+        
+        function generateReview() {
+            const reviewText = document.getElementById('reviewText').value.trim();
+            const authorName = document.getElementById('authorName').value.trim();
+            const reviewDate = document.getElementById('reviewDate').value.trim() || '1 month ago';
+            
+            if (!reviewText || !authorName) {
+                alert('Please fill in the review text and author name!');
+                return;
+            }
+            
+            // Generate stars HTML
+            let starsHTML = '';
+            for (let i = 0; i < 5; i++) {
+                if (i < selectedRating) {
+                    starsHTML += '            <span class="star filled">★</span>\n';
+                } else {
+                    starsHTML += '            <span class="star">★</span>\n';
+                }
+            }
+            
+            // Generate full HTML
+            const htmlCode = `    <article class="review-card">
+        <div class="review-stars">
+${starsHTML}        </div>
+        <div class="review-content">
+            <p>${reviewText}</p>
+        </div>
+        <div class="review-author">
+            <h4>${authorName}</h4>
+            <span class="review-date">${reviewDate}</span>
+        </div>
+    </article>`;
+            
+            // Show preview
+            let previewStars = '';
+            for (let i = 0; i < selectedRating; i++) {
+                previewStars += '<span>★</span>';
+            }
+            
+            document.getElementById('reviewPreview').innerHTML = `
+                <div class="preview-stars">${previewStars}</div>
+                <p style="font-style: italic; color: #666; margin-bottom: 1rem;">"${reviewText}"</p>
+                <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #e8ddd4;">
+                    <strong>${authorName}</strong>
+                    <span style="color: #999;">${reviewDate}</span>
+                </div>
+            `;
+            
+            document.getElementById('previewSection').style.display = 'block';
+            
+            // Show output
+            document.getElementById('codeOutput').textContent = htmlCode;
+            document.getElementById('outputSection').style.display = 'block';
+            
+            // Scroll to output
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function copyCode() {
+            const code = document.getElementById('codeOutput').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const successMsg = document.getElementById('successMessage');
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
+

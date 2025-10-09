@@ -49,6 +49,16 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// Handle internal navigation to home page
+document.querySelectorAll('a[href="index.html"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        // Add a parameter to indicate this is internal navigation
+        const url = new URL(this.href);
+        url.searchParams.set('internal', 'true');
+        this.href = url.toString();
+    });
+});
+
 // Navbar background change on scroll
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
@@ -238,8 +248,79 @@ class SplashScreenManager {
             return;
         }
         
+        // Check if user is coming from another page on the same site
+        if (this.shouldSkipSplash()) {
+            this.skipSplash();
+            return;
+        }
+        
         this.setupInitialState();
         this.startTransitionSequence();
+    }
+    
+    shouldSkipSplash() {
+        // Check if this is internal navigation (from URL parameter)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('internal') === 'true') {
+            // Clean up the URL parameter
+            const url = new URL(window.location);
+            url.searchParams.delete('internal');
+            window.history.replaceState({}, '', url);
+            return true;
+        }
+        
+        // Check if we've already shown splash screen in this session
+        const splashShown = sessionStorage.getItem('splashShown');
+        if (splashShown === 'true') {
+            return true;
+        }
+        
+        // Check if this is a back/forward navigation (browser cache)
+        if (performance.navigation && performance.navigation.type === 2) {
+            return true;
+        }
+        
+        // Check if page was loaded from cache (not a fresh load)
+        if (performance.getEntriesByType('navigation')[0] && 
+            performance.getEntriesByType('navigation')[0].transferSize === 0) {
+            return true;
+        }
+        
+        // Check if user is coming from another page on the same site
+        const referrer = document.referrer;
+        const currentDomain = window.location.origin;
+        
+        // If referrer exists and is from the same domain, skip splash
+        if (referrer && referrer.startsWith(currentDomain)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    skipSplash() {
+        // Hide splash screen immediately
+        if (this.splashScreen) {
+            this.splashScreen.style.display = 'none';
+        }
+        
+        // Show main content immediately
+        if (this.mainContent) {
+            this.mainContent.style.opacity = '1';
+            this.mainContent.style.transform = 'translateY(0)';
+            this.mainContent.classList.add('visible');
+        }
+        
+        if (this.footer) {
+            this.footer.style.opacity = '1';
+            this.footer.style.transform = 'translateY(0)';
+            this.footer.classList.add('visible');
+        }
+        
+        // Remove splash screen from DOM
+        setTimeout(() => {
+            this.cleanup();
+        }, 100);
     }
     
     setupInitialState() {
@@ -268,6 +349,9 @@ class SplashScreenManager {
     }
     
     startTransitionSequence() {
+        // Mark splash as shown in session storage
+        sessionStorage.setItem('splashShown', 'true');
+        
         // Start fade out earlier so content appears when text fades
         setTimeout(() => {
             this.startFadeOut();
@@ -349,9 +433,64 @@ class SplashScreenManager {
     }
 }
 
+// Check immediately if splash should be skipped (before DOM is ready)
+function shouldSkipSplashImmediate() {
+    // Check if this is internal navigation (from URL parameter)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('internal') === 'true') {
+        return true;
+    }
+    
+    // Check if we've already shown splash screen in this session
+    const splashShown = sessionStorage.getItem('splashShown');
+    if (splashShown === 'true') {
+        return true;
+    }
+    
+    // Check if user is coming from another page on the same site
+    const referrer = document.referrer;
+    const currentDomain = window.location.origin;
+    
+    // If referrer exists and is from the same domain, skip splash
+    if (referrer && referrer.startsWith(currentDomain)) {
+        return true;
+    }
+    
+    return false;
+}
+
+// Hide splash screen immediately if it should be skipped
+if (shouldSkipSplashImmediate()) {
+    // Add CSS to hide splash screen immediately
+    const style = document.createElement('style');
+    style.textContent = `
+        #splash-screen {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+        main, footer {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Clean up URL parameter if present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('internal') === 'true') {
+        const url = new URL(window.location);
+        url.searchParams.delete('internal');
+        window.history.replaceState({}, '', url);
+    }
+}
+
 // Initialize splash screen when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    new SplashScreenManager();
+    // Only initialize if splash screen should be shown
+    if (!shouldSkipSplashImmediate()) {
+        new SplashScreenManager();
+    }
 });
 
 // Fallback for immediate execution
@@ -359,7 +498,9 @@ if (document.readyState === 'loading') {
     // DOM is still loading, wait for DOMContentLoaded
 } else {
     // DOM is already loaded
-    new SplashScreenManager();
+    if (!shouldSkipSplashImmediate()) {
+        new SplashScreenManager();
+    }
 }
 
 // Calendly Integration

@@ -58,6 +58,85 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="canonical" href="https://arvao.ca/">
     
+    <!-- Splash screen control script - runs immediately -->
+    <script>
+        // Check immediately if splash should be skipped
+        (function() {
+            // Check if this is internal navigation (from URL parameter)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('internal') === 'true') {
+                // Hide splash screen immediately
+                document.addEventListener('DOMContentLoaded', function() {
+                    const splashScreen = document.getElementById('splash-screen');
+                    if (splashScreen) {
+                        splashScreen.style.display = 'none';
+                    }
+                    // Show main content immediately
+                    const main = document.querySelector('main');
+                    const footer = document.querySelector('footer');
+                    if (main) {
+                        main.style.opacity = '1';
+                        main.style.transform = 'translateY(0)';
+                    }
+                    if (footer) {
+                        footer.style.opacity = '1';
+                        footer.style.transform = 'translateY(0)';
+                    }
+                });
+                return;
+            }
+            
+            // Check if we've already shown splash screen in this session
+            const splashShown = sessionStorage.getItem('splashShown');
+            if (splashShown === 'true') {
+                // Hide splash screen immediately
+                document.addEventListener('DOMContentLoaded', function() {
+                    const splashScreen = document.getElementById('splash-screen');
+                    if (splashScreen) {
+                        splashScreen.style.display = 'none';
+                    }
+                    // Show main content immediately
+                    const main = document.querySelector('main');
+                    const footer = document.querySelector('footer');
+                    if (main) {
+                        main.style.opacity = '1';
+                        main.style.transform = 'translateY(0)';
+                    }
+                    if (footer) {
+                        footer.style.opacity = '1';
+                        footer.style.transform = 'translateY(0)';
+                    }
+                });
+                return;
+            }
+            
+            // Check if user is coming from another page on the same site
+            const referrer = document.referrer;
+            const currentDomain = window.location.origin;
+            
+            if (referrer && referrer.startsWith(currentDomain)) {
+                // Hide splash screen immediately
+                document.addEventListener('DOMContentLoaded', function() {
+                    const splashScreen = document.getElementById('splash-screen');
+                    if (splashScreen) {
+                        splashScreen.style.display = 'none';
+                    }
+                    // Show main content immediately
+                    const main = document.querySelector('main');
+                    const footer = document.querySelector('footer');
+                    if (main) {
+                        main.style.opacity = '1';
+                        main.style.transform = 'translateY(0)';
+                    }
+                    if (footer) {
+                        footer.style.opacity = '1';
+                        footer.style.transform = 'translateY(0)';
+                    }
+                });
+            }
+        })();
+    </script>
+    
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
     <script>
@@ -89,11 +168,9 @@
                     <h2>Lacque&latte</h2>
                 </div>
                 <ul class="nav-menu" role="menubar">
-                    <li role="none"><a href="#home" role="menuitem" aria-label="Go to home section">Home</a></li>
+                    <li role="none"><a href="index.html" role="menuitem" aria-label="Go to home section">Home</a></li>
                     <li role="none"><a href="services.html" role="menuitem" aria-label="View our services">Services</a></li>
                     <li role="none"><a href="portfolio.html" role="menuitem" aria-label="View our portfolio">Portfolio</a></li>
-                    <li role="none"><a href="#about" role="menuitem" aria-label="Go to about section">About</a></li>
-                    <li role="none"><a href="appointment.html" role="menuitem" aria-label="Book your appointment">Book Appointment</a></li>
                 </ul>
                 <button class="hamburger" aria-label="Toggle mobile menu" aria-expanded="false">
                     <span></span>
@@ -153,6 +230,93 @@
                                  loading="lazy">
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Google Reviews Section -->
+        <section id="reviews" class="reviews-section" aria-labelledby="reviews-title">
+            <div class="container">
+                <h2 id="reviews-title" class="section-title">What Our Clients Say</h2>
+                <div class="reviews-header">
+                    <div class="google-rating">
+                        <div class="rating-stars">
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                        </div>
+                        <div class="rating-info">
+                            <span class="rating-number">5.0</span>
+                            <span class="rating-text">on Google</span>
+                        </div>
+                    </div>
+                    <a href="https://maps.app.goo.gl/j2kmTynEMoHZZSni7" class="google-reviews-link" target="_blank" rel="noopener noreferrer" aria-label="Read all reviews on Google">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        View All Reviews on Google
+                    </a>
+                </div>
+                
+                <div class="testimonials-grid">
+                    <!-- Review Card 1 -->
+                    <article class="review-card">
+                        <div class="review-stars">
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                        </div>
+                        <div class="review-content">
+                            <p>"Amazing service! Hannah is incredibly talented and pays attention to every detail. My nails have never looked better. Highly recommend!"</p>
+                        </div>
+                        <div class="review-author">
+                            <h4>Sarah M.</h4>
+                            <span class="review-date">2 weeks ago</span>
+                        </div>
+                    </article>
+
+                    <!-- Review Card 2 -->
+                    <article class="review-card">
+                        <div class="review-stars">
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                        </div>
+                        <div class="review-content">
+                            <p>"Best nail salon experience I've ever had. The atmosphere is so relaxing and Hannah's work is absolutely beautiful. Will definitely be coming back!"</p>
+                        </div>
+                        <div class="review-author">
+                            <h4>Jessica L.</h4>
+                            <span class="review-date">1 month ago</span>
+                        </div>
+                    </article>
+
+                    <!-- Review Card 3 -->
+                    <article class="review-card">
+                        <div class="review-stars">
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                            <span class="star filled">★</span>
+                        </div>
+                        <div class="review-content">
+                            <p>"Hannah is a true artist! She understood exactly what I wanted and delivered beyond my expectations. The studio is beautiful and very clean."</p>
+                        </div>
+                        <div class="review-author">
+                            <h4>Emily R.</h4>
+                            <span class="review-date">3 weeks ago</span>
+                        </div>
+                    </article>
                 </div>
             </div>
         </section>
