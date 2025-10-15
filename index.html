@@ -58,84 +58,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="canonical" href="https://arvao.ca/">
     
-    <!-- Splash screen control script - runs immediately -->
-    <script>
-        // Check immediately if splash should be skipped
-        (function() {
-            // Check if this is internal navigation (from URL parameter)
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('internal') === 'true') {
-                // Hide splash screen immediately
-                document.addEventListener('DOMContentLoaded', function() {
-                    const splashScreen = document.getElementById('splash-screen');
-                    if (splashScreen) {
-                        splashScreen.style.display = 'none';
-                    }
-                    // Show main content immediately
-                    const main = document.querySelector('main');
-                    const footer = document.querySelector('footer');
-                    if (main) {
-                        main.style.opacity = '1';
-                        main.style.transform = 'translateY(0)';
-                    }
-                    if (footer) {
-                        footer.style.opacity = '1';
-                        footer.style.transform = 'translateY(0)';
-                    }
-                });
-                return;
-            }
-            
-            // Check if we've already shown splash screen in this session
-            const splashShown = sessionStorage.getItem('splashShown');
-            if (splashShown === 'true') {
-                // Hide splash screen immediately
-                document.addEventListener('DOMContentLoaded', function() {
-                    const splashScreen = document.getElementById('splash-screen');
-                    if (splashScreen) {
-                        splashScreen.style.display = 'none';
-                    }
-                    // Show main content immediately
-                    const main = document.querySelector('main');
-                    const footer = document.querySelector('footer');
-                    if (main) {
-                        main.style.opacity = '1';
-                        main.style.transform = 'translateY(0)';
-                    }
-                    if (footer) {
-                        footer.style.opacity = '1';
-                        footer.style.transform = 'translateY(0)';
-                    }
-                });
-                return;
-            }
-            
-            // Check if user is coming from another page on the same site
-            const referrer = document.referrer;
-            const currentDomain = window.location.origin;
-            
-            if (referrer && referrer.startsWith(currentDomain)) {
-                // Hide splash screen immediately
-                document.addEventListener('DOMContentLoaded', function() {
-                    const splashScreen = document.getElementById('splash-screen');
-                    if (splashScreen) {
-                        splashScreen.style.display = 'none';
-                    }
-                    // Show main content immediately
-                    const main = document.querySelector('main');
-                    const footer = document.querySelector('footer');
-                    if (main) {
-                        main.style.opacity = '1';
-                        main.style.transform = 'translateY(0)';
-                    }
-                    if (footer) {
-                        footer.style.opacity = '1';
-                        footer.style.transform = 'translateY(0)';
-                    }
-                });
-            }
-        })();
-    </script>
+    <!-- Splash screen will be handled by script.js -->
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
@@ -154,9 +77,7 @@
     <!-- Splash Screen -->
     <div id="splash-screen" class="splash-screen">
         <div class="splash-logo">
-            <img src="images/LSRSleafy-branch.png" alt="Decorative leafy branch" class="splash-branch-left">
             <h1>Lacque&latte</h1>
-            <img src="images/RSLSleafy-branch.png" alt="Decorative leafy branch" class="splash-branch-right">
         </div>
     </div>
     
@@ -191,11 +112,6 @@
                     <p>Experience luxury nail care in our serene, modern studio. Where artistry meets tranquility.</p>
                     <a href="services.html" class="cta-button" aria-label="View our services">View Services</a>
                 </div>
-            </div>
-            <div class="hero-shapes" aria-hidden="true">
-                <div class="organic-shape shape-1"></div>
-                <div class="organic-shape shape-2"></div>
-                <div class="organic-shape shape-3"></div>
             </div>
         </section>
 
