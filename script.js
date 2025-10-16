@@ -52,10 +52,20 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // Handle internal navigation to home page
 document.querySelectorAll('a[href="index.html"]').forEach(link => {
     link.addEventListener('click', function(e) {
+        // Set a flag that we're navigating back to home
+        sessionStorage.setItem('navigatingToHome', 'true');
         // Add a parameter to indicate this is internal navigation
-        const url = new URL(this.href);
+        const url = new URL(this.href, window.location.origin);
         url.searchParams.set('internal', 'true');
         this.href = url.toString();
+    });
+});
+
+// Set flag when navigating away from home page
+document.querySelectorAll('a[href="services.html"], a[href="portfolio.html"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        // Set a flag that we're navigating away from home
+        sessionStorage.setItem('navigatedAwayFromHome', 'true');
     });
 });
 
@@ -283,11 +293,14 @@ class SplashScreenManager {
     }
     
     setupInitialState() {
+        // Add splash-active class to body
+        document.body.classList.add('splash-active');
+        
         // Ensure splash screen is visible
         this.splashScreen.style.setProperty('display', 'flex', 'important');
         this.splashScreen.style.setProperty('opacity', '1', 'important');
         this.splashScreen.style.setProperty('visibility', 'visible', 'important');
-        this.splashScreen.style.setProperty('z-index', '99998', 'important');
+        this.splashScreen.style.setProperty('z-index', '99999', 'important');
         this.splashScreen.classList.remove('fade-out');
         
         // Hide main content initially with enhanced styling
@@ -330,7 +343,7 @@ class SplashScreenManager {
         // Remove splash screen after transition completes
         setTimeout(() => {
             this.cleanup();
-        }, 900); // Shorter cleanup time
+        }, 1800); // Match the CSS transition duration
     }
     
     revealMainContent() {
@@ -385,14 +398,26 @@ class SplashScreenManager {
     }
     
     cleanup() {
+        // Remove splash-active class from body
+        document.body.classList.remove('splash-active');
+        
         if (this.splashScreen && this.splashScreen.parentNode) {
-            this.splashScreen.remove();
+            // Ensure splash screen is completely hidden before removal
+            this.splashScreen.style.display = 'none';
+            this.splashScreen.style.visibility = 'hidden';
+            this.splashScreen.style.opacity = '0';
+            this.splashScreen.style.pointerEvents = 'none';
+            
+            // Remove from DOM after a brief delay
+            setTimeout(() => {
+                this.splashScreen.remove();
+            }, 100);
         }
         this.isTransitioning = false;
     }
 }
 
-// Check if splash should be skipped (simplified logic)
+// Check if splash should be skipped (ultra-simple logic)
 function shouldSkipSplash() {
     console.log('🔍 Checking if splash should be skipped...');
     
@@ -412,6 +437,19 @@ function shouldSkipSplash() {
     console.log('📝 SessionStorage splashShown:', splashShown);
     if (splashShown === 'true') {
         console.log('⏭️ Skipping splash: already shown in this session');
+        return true;
+    }
+    
+    // Check if we're navigating back to home after being away
+    const navigatingToHome = sessionStorage.getItem('navigatingToHome');
+    const navigatedAwayFromHome = sessionStorage.getItem('navigatedAwayFromHome');
+    console.log('🏠 Navigating to home:', navigatingToHome, 'Navigated away:', navigatedAwayFromHome);
+    
+    if (navigatingToHome === 'true' && navigatedAwayFromHome === 'true') {
+        console.log('⏭️ Skipping splash: returning to home after navigation');
+        // Clean up the flags
+        sessionStorage.removeItem('navigatingToHome');
+        sessionStorage.removeItem('navigatedAwayFromHome');
         return true;
     }
     
@@ -443,69 +481,97 @@ window.clearSplashSession = clearSplashSession;
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM Content Loaded - Initializing splash screen...');
     
-    // Check if splash should be skipped
-    if (shouldSkipSplash()) {
-        console.log('❌ Hiding splash screen immediately');
-        // Hide splash screen immediately and show main content
-        const splashScreen = document.getElementById('splash-screen');
-        const main = document.querySelector('main');
-        const footer = document.querySelector('footer');
-        
-        if (splashScreen) {
-            splashScreen.style.display = 'none';
-            console.log('✅ Splash screen hidden');
-        }
-        
-        if (main) {
-            main.style.opacity = '1';
-            main.style.transform = 'translateY(0)';
-            console.log('✅ Main content shown');
-        }
-        
-        if (footer) {
-            footer.style.opacity = '1';
-            footer.style.transform = 'translateY(0)';
-            console.log('✅ Footer shown');
-        }
-    } else {
-        console.log('🎬 Starting splash screen animation');
-        // Show splash screen
-        new SplashScreenManager();
+    // Check if splash screen was already handled by head script
+    if (document.body.classList.contains('skip-splash')) {
+        console.log('✅ Splash screen already handled by head script');
+        return;
     }
+    
+    // Add a small delay to ensure navigation flags are processed
+    setTimeout(() => {
+        // Check if splash should be skipped
+        if (shouldSkipSplash()) {
+            console.log('❌ Hiding splash screen immediately');
+            // Use CSS-only approach by adding body class
+            document.body.classList.add('skip-splash');
+            document.body.classList.remove('splash-active');
+            document.body.style.overflow = '';
+            
+            // Ensure main content is visible
+            const main = document.querySelector('main');
+            const footer = document.querySelector('footer');
+            if (main) {
+                main.style.opacity = '1';
+                main.style.transform = 'translateY(0)';
+                main.style.visibility = 'visible';
+                main.classList.add('visible');
+            }
+            if (footer) {
+                footer.style.opacity = '1';
+                footer.style.transform = 'translateY(0)';
+                footer.style.visibility = 'visible';
+                footer.classList.add('visible');
+            }
+            console.log('✅ Splash screen hidden via CSS');
+        } else {
+            console.log('🎬 Starting splash screen animation');
+            // Show splash screen
+            new SplashScreenManager();
+        }
+    }, 50); // Increased delay to ensure head script completes first
 });
 
 // Fallback for immediate execution if DOM is already loaded
 if (document.readyState !== 'loading') {
     console.log('⚡ DOM already loaded - Using fallback initialization...');
     // DOM is already loaded
-    if (shouldSkipSplash()) {
-        console.log('❌ Fallback: Hiding splash screen immediately');
-        // Hide splash screen immediately and show main content
-        const splashScreen = document.getElementById('splash-screen');
-        const main = document.querySelector('main');
-        const footer = document.querySelector('footer');
-        
-        if (splashScreen) {
-            splashScreen.style.display = 'none';
-            console.log('✅ Fallback: Splash screen hidden');
+    // Add a small delay to ensure navigation flags are processed
+    setTimeout(() => {
+        if (shouldSkipSplash()) {
+            console.log('❌ Fallback: Hiding splash screen immediately');
+            // Hide splash screen immediately and show main content
+            const splashScreen = document.getElementById('splash-screen');
+            const main = document.querySelector('main');
+            const footer = document.querySelector('footer');
+            
+            // Add skip-splash class and remove splash-active
+            document.body.classList.add('skip-splash');
+            document.body.classList.remove('splash-active');
+            
+            if (splashScreen) {
+                splashScreen.style.display = 'none';
+                splashScreen.style.visibility = 'hidden';
+                splashScreen.style.opacity = '0';
+                splashScreen.style.pointerEvents = 'none';
+                console.log('✅ Fallback: Splash screen hidden');
+            }
+            
+            if (main) {
+                main.style.opacity = '1';
+                main.style.transform = 'translateY(0)';
+                main.style.visibility = 'visible';
+                main.style.display = 'block';
+                main.classList.add('visible');
+                console.log('✅ Fallback: Main content shown');
+            }
+            
+            if (footer) {
+                footer.style.opacity = '1';
+                footer.style.transform = 'translateY(0)';
+                footer.style.visibility = 'visible';
+                footer.style.display = 'block';
+                footer.classList.add('visible');
+                console.log('✅ Fallback: Footer shown');
+            }
+            
+            // Re-enable body scroll
+            document.body.style.overflow = '';
+        } else {
+            console.log('🎬 Fallback: Starting splash screen animation');
+            // Show splash screen
+            new SplashScreenManager();
         }
-        
-        if (main) {
-            main.style.opacity = '1';
-            main.style.transform = 'translateY(0)';
-            console.log('✅ Fallback: Main content shown');
-        }
-        
-        if (footer) {
-            footer.style.opacity = '1';
-            footer.style.transform = 'translateY(0)';
-            console.log('✅ Fallback: Footer shown');
-        }
-    } else {
-        console.log('🎬 Fallback: Starting splash screen animation');
-        // Show splash screen
-        new SplashScreenManager();
-    }
+    }, 10); // Small delay to ensure flags are processed
 }
 
 // Calendly Integration

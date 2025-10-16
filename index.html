@@ -58,7 +58,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="canonical" href="https://arvao.ca/">
     
-    <!-- Splash screen will be handled by script.js -->
+    <!-- Immediate splash screen logic - runs before any other scripts -->
+    <script>
+        // Immediate splash screen detection and control
+        (function() {
+            console.log('🚀 Immediate splash screen logic running...');
+            
+            function shouldSkipSplashImmediate() {
+                console.log('🔍 Checking if splash should be skipped (immediate)...');
+                
+                // Check if this is internal navigation (from URL parameter)
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('internal') === 'true') {
+                    console.log('⏭️ Skipping splash: internal navigation detected');
+                    return true;
+                }
+                
+                // Check if we've already shown splash screen in this session
+                const splashShown = sessionStorage.getItem('splashShown');
+                console.log('📝 SessionStorage splashShown:', splashShown);
+                if (splashShown === 'true') {
+                    console.log('⏭️ Skipping splash: already shown in this session');
+                    return true;
+                }
+                
+                // Check if we're navigating back to home after being away
+                const navigatingToHome = sessionStorage.getItem('navigatingToHome');
+                const navigatedAwayFromHome = sessionStorage.getItem('navigatedAwayFromHome');
+                console.log('🏠 Navigating to home:', navigatingToHome, 'Navigated away:', navigatedAwayFromHome);
+                
+                if (navigatingToHome === 'true' && navigatedAwayFromHome === 'true') {
+                    console.log('⏭️ Skipping splash: returning to home after navigation');
+                    return true;
+                }
+                
+                // Check if user is coming from another page on the same site
+                const referrer = document.referrer;
+                const currentDomain = window.location.origin;
+                console.log('🔗 Referrer:', referrer, 'Current domain:', currentDomain);
+                
+                // If referrer exists and is from the same domain, skip splash
+                if (referrer && referrer.startsWith(currentDomain)) {
+                    console.log('⏭️ Skipping splash: coming from same domain');
+                    return true;
+                }
+                
+                console.log('✅ Splash screen should be shown');
+                return false;
+            }
+            
+            // Run immediately when this script loads
+            if (shouldSkipSplashImmediate()) {
+                console.log('❌ Hiding splash screen immediately (head script)');
+                // Use CSS-only approach by adding body class
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.classList.add('skip-splash');
+                    document.body.style.overflow = '';
+                    console.log('✅ Splash screen hidden via CSS (head script)');
+                });
+            } else {
+                console.log('🎬 Splash screen will be shown (head script)');
+            }
+        })();
+    </script>
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>

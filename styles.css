@@ -112,7 +112,7 @@ a:focus {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 99998 !important;
+    z-index: 99999 !important;
     transition: all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     overflow: hidden;
     opacity: 1 !important;
@@ -122,6 +122,26 @@ a:focus {
     image-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* CSS-only splash screen control */
+body.skip-splash .splash-screen {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+body.skip-splash main {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
+}
+
+body.skip-splash footer {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
 }
 
 .splash-screen::before {
@@ -147,10 +167,11 @@ a:focus {
 }
 
 .splash-screen.fade-out {
-    opacity: 0;
-    visibility: hidden;
+    opacity: 0 !important;
+    visibility: hidden !important;
     transform: scale(1.02) translateY(-30px);
     backdrop-filter: blur(25px);
+    pointer-events: none !important;
 }
 
 .splash-logo {
@@ -233,6 +254,39 @@ a:focus {
 .main-content-fade-in.visible {
     opacity: 1;
     transform: translateY(0);
+    visibility: visible;
+}
+
+/* Ensure main content is visible when splash is skipped */
+main.visible {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    display: block !important;
+}
+
+footer.visible {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    display: block !important;
+}
+
+/* Ensure main content is always visible when splash is not present */
+body:not(.splash-active) main,
+body.skip-splash main {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    display: block !important;
+}
+
+body:not(.splash-active) footer,
+body.skip-splash footer {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    display: block !important;
 }
 
 /* Hero section entrance animations */
@@ -271,7 +325,7 @@ header {
     position: fixed !important;
     top: 0 !important;
     width: 100% !important;
-    z-index: 99999 !important;
+    z-index: 99998 !important;
     opacity: 1 !important;
     visibility: visible !important;
     display: block !important;
