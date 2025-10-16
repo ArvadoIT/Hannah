@@ -1,0 +1,59 @@
+# Admin Panel Access Control
+# This file helps secure the admin panel and provides clean URL routing
+
+# Redirect admin subdomain to admin.html
+RewriteEngine On
+
+# Redirect admin subdomain to admin.html
+RewriteCond %{HTTP_HOST} ^admin\.(.*)$ [NC]
+RewriteRule ^(.*)$ /admin.html [L]
+
+# Alternative: Redirect /admin path to admin.html
+RewriteRule ^admin/?$ admin.html [L]
+
+# Security headers for admin panel
+<Files "admin.html">
+    Header set X-Robots-Tag "noindex, nofollow"
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</Files>
+
+<Files "admin-*.css">
+    Header set Cache-Control "public, max-age=31536000"
+</Files>
+
+<Files "admin-*.js">
+    Header set Cache-Control "public, max-age=31536000"
+</Files>
+
+# Prevent direct access to admin files from main site
+RewriteCond %{HTTP_REFERER} !^https?://admin\.
+RewriteCond %{HTTP_REFERER} !^https?://(.*)/admin
+RewriteCond %{REQUEST_URI} ^/admin\.html$
+RewriteRule ^(.*)$ - [F,L]
+
+# Optional: Password protect admin directory (additional security)
+# Uncomment the lines below and create .htpasswd file
+# AuthType Basic
+# AuthName "Admin Access"
+# AuthUserFile /path/to/.htpasswd
+# Require valid-user
+
+# Prevent access to sensitive files
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|inc|bak)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Enable compression for better performance
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Set proper MIME types
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+</IfModule>
+

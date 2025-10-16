@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Calendar - Admin Dashboard - Lacque&latte</title>
+    <meta name="description" content="Lacque&latte Admin Calendar - View and manage monthly appointments">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Same fonts and styling as main site -->
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Admin-specific styles -->
+    <link rel="stylesheet" href="admin-styles.css">
+    
+    <!-- Calendar-specific styles -->
+    <link rel="stylesheet" href="calendar-styles.css">
+</head>
+<body class="admin-body">
+    <!-- Admin Login Screen -->
+    <div id="admin-login" class="admin-login-screen">
+        <div class="admin-login-container">
+            <div class="admin-login-header">
+                <h1 class="admin-logo">Lacque&latte</h1>
+                <p class="admin-login-subtitle">Admin Access</p>
+            </div>
+            
+            <form id="admin-login-form" class="admin-login-form">
+                <div class="form-group">
+                    <label for="admin-username">Username</label>
+                    <input type="text" id="admin-username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="admin-password">Password</label>
+                    <input type="password" id="admin-password" name="password" required>
+                </div>
+                
+                <button type="submit" class="admin-login-btn">Sign In</button>
+                
+                <div id="login-error" class="login-error" style="display: none;">
+                    Invalid credentials. Please try again.
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Calendar Dashboard -->
+    <div id="admin-dashboard" class="admin-dashboard" style="display: none;">
+        <!-- Admin Header -->
+        <header class="admin-header">
+            <div class="admin-header-content">
+                <div class="admin-header-left">
+                    <button class="admin-hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <h2 class="admin-dashboard-title">Calendar View</h2>
+                    <span id="admin-user-info" class="admin-user-info"></span>
+                </div>
+                
+                <div class="admin-header-right">
+                    <button id="admin-logout" class="admin-logout-btn">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Navigation Menu -->
+        <div class="admin-mobile-menu" id="admin-mobile-menu">
+            <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+            <div class="mobile-menu-content">
+                <div class="mobile-menu-header">
+                    <h3>Navigation</h3>
+                    <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">×</button>
+                </div>
+                <div class="mobile-menu-links">
+                    <a href="admin.html" class="mobile-menu-link">
+                        <span class="menu-icon">🏠</span>
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                    <a href="calendar.html" class="mobile-menu-link active">
+                        <span class="menu-icon">📅</span>
+                        <span class="menu-text">Calendar</span>
+                    </a>
+                    <a href="analytics.html" class="mobile-menu-link">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Analytics</span>
+                    </a>
+                    <div class="mobile-menu-divider"></div>
+                    <a href="index.html" class="mobile-menu-link">
+                        <span class="menu-icon">🌐</span>
+                        <span class="menu-text">Main Website</span>
+                    </a>
+                    <a href="services.html" class="mobile-menu-link">
+                        <span class="menu-icon">💅</span>
+                        <span class="menu-text">Services Page</span>
+                    </a>
+                    <a href="portfolio.html" class="mobile-menu-link">
+                        <span class="menu-icon">🖼️</span>
+                        <span class="menu-text">Portfolio Page</span>
+                    </a>
+                    <div class="mobile-menu-divider"></div>
+                    <button class="mobile-menu-logout" id="mobile-admin-logout">
+                        <span class="menu-icon">🚪</span>
+                        <span class="menu-text">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Navigation -->
+        <nav class="calendar-nav-bar">
+            <div class="calendar-nav-container">
+                <button class="calendar-view-btn active" data-view="month">Month View</button>
+                <button class="calendar-view-btn" data-view="week">Week View</button>
+                <button class="calendar-view-btn" data-view="day">Day View</button>
+            </div>
+        </nav>
+
+        <!-- Calendar Content -->
+        <main class="calendar-main">
+            <!-- Calendar Controls -->
+            <div class="calendar-controls">
+                <div class="calendar-nav-controls">
+                    <button id="prev-month" class="calendar-nav-btn" aria-label="Previous month">‹</button>
+                    <h2 id="current-month-year" class="calendar-month-year">January 2024</h2>
+                    <button id="next-month" class="calendar-nav-btn" aria-label="Next month">›</button>
+                </div>
+                
+                <div class="calendar-actions">
+                    <button id="today-btn" class="calendar-today-btn">Today</button>
+                    <button id="add-appointment-btn" class="calendar-add-btn">+ Add Appointment</button>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="calendar-container">
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Calendar will be generated here -->
+                </div>
+            </div>
+
+            <!-- Appointment Details Sidebar -->
+            <div class="appointment-sidebar" id="appointment-sidebar">
+                <div class="sidebar-header">
+                    <h3>Appointment Details</h3>
+                    <button id="close-sidebar" class="close-sidebar-btn">×</button>
+                </div>
+                <div class="sidebar-content" id="sidebar-content">
+                    <p class="no-selection">Select a date to view appointments</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="admin-loading" class="admin-loading" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="admin-script.js"></script>
+    <script src="calendar-script.js"></script>
+</body>
+</html>
