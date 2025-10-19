@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://arvao.ca/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin.html
+Disallow: /calendar.html
+Disallow: /analytics.html
+Disallow: /add-reviews-helper.html
+
+# Allow all other pages
+Allow: /index.html
+Allow: /services.html
+Allow: /portfolio.html

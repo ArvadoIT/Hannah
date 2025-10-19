@@ -4,6 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Services - Lacque&latte | Premium Nail Care & Art</title>
+    
+    <!-- Critical inline CSS to prevent white flash -->
+    <style>
+        html, body {
+            background-color: #faf8f5 !important;
+            margin: 0;
+            padding: 0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-color: #faf8f5;
+            z-index: -1;
+        }
+    </style>
+    
+    <!-- Disable splash screen for non-home pages -->
+    <script>
+        window.__skipSplash = true;
+    </script>
     <meta name="description" content="Discover our comprehensive range of nail services at Lacque&latte. From Russian manicures to bio gel extensions, we offer premium nail care with exceptional artistry.">
     <meta name="keywords" content="nail services, manicure, pedicure, nail art, gel extensions, Russian manicure, bio gel, nail care">
     <meta name="author" content="Lacque&latte Nail Studio">
@@ -26,6 +47,9 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="canonical" href="https://arvao.ca/services">
+    
+    <!-- Content Security Policy (Report-Only) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://assets.calendly.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-src https://assets.calendly.com;">
 </head>
 <body>
     <!-- Skip Link for Accessibility -->
@@ -383,6 +407,12 @@
                         <div class="form-group">
                             <label for="customer-notes">Special Requests (Optional)</label>
                             <textarea id="customer-notes" name="notes" rows="4" placeholder="Any special requests or preferences?"></textarea>
+                        </div>
+                        
+                        <!-- Honeypot field for spam protection (hidden from users) -->
+                        <div style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+                            <label for="website-url">Website URL (leave blank)</label>
+                            <input type="text" id="website-url" name="website" tabindex="-1" autocomplete="off">
                         </div>
 
                         <div class="booking-navigation">

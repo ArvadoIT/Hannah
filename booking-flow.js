@@ -1,3 +1,5 @@
+"use strict";
+
 // Booking Flow JavaScript
 // Multi-step booking system for Lacque&latte services
 
@@ -341,6 +343,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.getElementById('booking-contact-form');
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        // Honeypot validation - if filled, it's likely spam
+        const honeypot = document.getElementById('website-url');
+        if (honeypot && honeypot.value.trim() !== '') {
+            console.log('Spam detected - honeypot field filled');
+            return; // Silently reject
+        }
         
         // Validate form
         const name = document.getElementById('customer-name').value.trim();

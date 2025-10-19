@@ -4,6 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Portfolio - Lacque&latte | Nail Art Gallery & Work Showcase</title>
+    
+    <!-- Critical inline CSS to prevent white flash -->
+    <style>
+        html, body {
+            background-color: #faf8f5 !important;
+            margin: 0;
+            padding: 0;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-color: #faf8f5;
+            z-index: -1;
+        }
+    </style>
+    
+    <!-- Disable splash screen for non-home pages -->
+    <script>
+        window.__skipSplash = true;
+    </script>
     <meta name="description" content="Explore our stunning portfolio of nail art and work at Lacque&latte. See before/after transformations, client testimonials, and our latest nail art creations.">
     <meta name="keywords" content="nail art portfolio, nail gallery, before after, nail transformations, nail art showcase, manicure gallery">
     <meta name="author" content="Lacque&latte Nail Studio">
@@ -347,7 +368,7 @@
                 <div class="cta-content">
                     <h2>Ready to Create Your Perfect Look?</h2>
                     <p>Book your appointment and let us transform your nails into a work of art.</p>
-                    <a href="appointment.html" class="cta-button">Book Your Appointment</a>
+                    <a href="services.html" class="cta-button">Book Your Appointment</a>
                 </div>
             </div>
         </section>

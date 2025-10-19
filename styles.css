@@ -45,17 +45,38 @@
     box-sizing: border-box;
 }
 
+/* Prevent any white flash - critical styles */
+html, body {
+    background-color: var(--background-primary) !important;
+}
+
+/* Ensure background is set before any paint */
+html {
+    background: var(--background-primary) !important;
+}
+
 body {
     font-family: var(--font-primary);
     line-height: 1.6;
     color: var(--text-primary);
-    background-color: var(--background-primary);
+    background-color: var(--background-primary) !important;
     overflow-x: hidden;
     /* Mobile optimizations */
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Prevent white flash during transitions */
+    min-height: 100vh;
+}
+
+/* Fixed fallback background layer (never shows white) */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-color: var(--background-primary);
+    z-index: -1;
 }
 
 /* Screen Reader Only Class */
@@ -100,19 +121,23 @@ a:focus {
     top: 6px;
 }
 
-/* Splash Screen */
+/* Splash screen background covers content but not nav */
 .splash-screen {
     position: fixed !important;
+    inset: 0 !important;
     top: 0 !important;
     left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
     background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%) !important;
+    background-color: var(--background-primary) !important;
     display: flex !important;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 99999 !important;
+    z-index: 10000 !important;
     transition: all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     overflow: hidden;
     opacity: 1 !important;
@@ -122,6 +147,13 @@ a:focus {
     image-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Ensure smooth transition without white flash */
+    will-change: opacity, transform;
+    /* Safari fix for smooth transitions */
+    backface-visibility: hidden;
+    /* Prevent any white space or gaps */
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* CSS-only splash screen control */
@@ -247,8 +279,40 @@ body.skip-splash footer {
 /* Main content fade-in */
 .main-content-fade-in {
     opacity: 0;
-    transform: translateY(30px);
-    transition: all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateY(0);
+    transition: opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity;
+}
+
+/* Ensure main content is visible when splash is not present */
+body:not(.splash-active) main,
+body.skip-splash main {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    display: block !important;
+}
+
+/* Ensure main content has proper background during transition */
+main {
+    background-color: var(--background-primary) !important;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+    visibility: visible;
+    opacity: 0;
+    transition: opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity;
+    /* Safari fix for smooth transitions */
+    backface-visibility: hidden;
+}
+
+/* Main content rendered behind splash (no gap, no white) */
+body.splash-active main {
+    visibility: visible !important;
+    opacity: 0 !important;
+    transform: translateY(0) !important;
+    background-color: var(--background-primary) !important;
 }
 
 .main-content-fade-in.visible {
@@ -325,13 +389,27 @@ header {
     position: fixed !important;
     top: 0 !important;
     width: 100% !important;
-    z-index: 99998 !important;
+    z-index: 20000 !important;
     opacity: 1 !important;
     visibility: visible !important;
     display: block !important;
     height: auto !important;
     min-height: 80px !important;
     transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Navigation bar visible on splash (topmost layer) */
+body.splash-active header {
+    z-index: 20000 !important;
+}
+
+/* CRITICAL: Suppress header background during splash to prevent cream flash */
+body.splash-active .navbar {
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    /* Prevent background from transitioning (fixes Firefox/Safari) */
+    transition: none !important;
 }
 
 /* Navigation */
@@ -351,6 +429,7 @@ header {
     height: auto !important;
     min-height: 60px !important;
 }
+
 
 .nav-container {
     max-width: 1200px;
@@ -462,7 +541,7 @@ header {
 /* Hero Section */
 .hero {
     height: 100vh;
-    background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+    background-color: var(--background-primary);
     background-image: url('images/DOWNroundflower.png');
     background-repeat: no-repeat;
     background-position: center center;
@@ -769,6 +848,13 @@ header {
     opacity: 1 !important;
     transform: none !important;
   }
+  /* CRITICAL: Still suppress header background during splash even with reduced motion */
+  body.splash-active .navbar {
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    transition: none !important;
+  }
 }
 
 /* ===== PAGE-SPECIFIC STYLES ===== */
@@ -776,7 +862,11 @@ header {
 /* Page Hero Section */
 .page-hero {
     padding: 120px 0 80px;
-    background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+    background-color: var(--background-primary);
+    background-image: url('images/roundflower.png');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 100% 100%;
     text-align: center;
     position: relative;
     overflow: hidden;

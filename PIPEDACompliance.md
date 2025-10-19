@@ -1,3 +1,63 @@
+You are a privacy-aware web engineer. Implement the PIPEDA compliance items from `PIPEDA.md` for Lacque&Latte so the site is compliant out of the box, even if SendGrid/Twilio are NOT purchased yet.
+
+### Input Spec
+- Use the content from the user-provided `PIPEDA.md`.
+- Tech stack: Next.js 14 (App Router), NextAuth + MongoDB Atlas (already scaffolded), SendGrid + Twilio (feature-flagged).
+
+### Deliverables
+1) Add/Update files:
+- `/docs/PIPEDA.md` ← use the user’s content verbatim (minor formatting ok).
+- `/src/app/privacy/page.mdx` – public Privacy Policy page written in plain English, matching the PIPEDA.md structure:
+  - What data is collected
+  - Why it’s collected
+  - Where it’s stored (MongoDB Atlas)
+  - Third parties (Vercel, MongoDB Atlas, SendGrid, Twilio)
+  - Retention (2 years)
+  - Rights: access, correction, deletion (how to contact)
+  - Consent statement matching the booking/contact forms
+  - Privacy contact: from env `LEGAL_PRIVACY_CONTACT_EMAIL`
+  - Last updated date rendered dynamically
+- `/src/app/(public)/booking/components/ConsentNotice.tsx` – a small reusable component that renders the consent text with a checkbox. It must:
+  - Take props: `checked`, `onChange`, `required`
+  - Link to `/privacy`
+  - Text pulls `LEGAL_BUSINESS_NAME` and `LEGAL_PRIVACY_CONTACT_EMAIL` from env
+- Update `/src/app/(public)/contact/page.tsx` and any booking form to include `ConsentNotice` (required). Persist `consentAccepted` and `consentDate` to Mongo on submission.
+- `/src/app/api/privacy/export/route.ts` – Admin-only endpoint:
+  - GET: export a client’s data by email (query param). Return CSV or JSON.
+  - Must check Auth and role=admin; otherwise 401.
+- `/src/app/api/privacy/delete/route.ts` – Admin-only endpoint:
+  - POST: `{email}` → soft-delete or hard-delete client record and appointments.
+  - Record an audit note (simple log collection: `audits`: {action, email, adminUserId, timestamp})
+- `/src/app/api/email/templates.ts` – centralize email bodies for transactional vs promotional:
+  - Transactional emails must NOT include marketing; include business name, address (placeholder), and privacy contact.
+  - Promotional template contains explicit consent requirement and unsubscribe link placeholder.
+- `/src/app/api/email/unsubscribe/route.ts` – simple stub endpoint for unsubscribe actions (writes to a `suppressions` collection; SendGrid integration later).
+- `/src/app/api/sms/route.ts` – ensure all SMS include “Reply STOP to unsubscribe” and write STOP requests to `suppressions`.
+- Add a small `/src/app/(admin)/privacy-tools/page.tsx` page:
+  - Buttons: “Export Client Data”, “Delete Client Data”
+  - Admin-only; ties to the endpoints above
+  - Show clear warnings before deletion
+
+2) Config & Flags
+- Use `.env.example` keys already proposed (no secrets). Ensure app runs with default flags (no providers purchased).
+- Add `RETENTION_YEARS="2"` and read it in the Privacy page.
+
+3) Validation & Logging
+- Use zod to validate request bodies and query params.
+- Log actions to `audits` collection with minimal PII (email + action + adminId + timestamp).
+
+4) Acceptance Criteria
+- `/privacy` renders with dynamic “Last Updated”.
+- Contact/booking cannot submit unless consent is checked.
+- Admin can reach `/admin/privacy-tools` only when authenticated.
+- Export/Delete endpoints require admin and function in DRY-RUN if DB lacks records.
+- All email/SMS paths operate even when SendGrid/Twilio keys are absent (no crash; DRY-RUN true).
+
+Please implement now without inserting any real secrets or live provider code beyond feature-flagged stubs.
+
+
+
+
 # 🇨🇦 PIPEDA Compliance – Lacque&Latte Nail Studio  
 ### Personal Information Protection and Electronic Documents Act (PIPEDA) Compliance Guide  
 _Last updated: October 2025_  

@@ -1,3 +1,5 @@
+"use strict";
+
 // Mobile Navigation Toggle
 const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
@@ -61,6 +63,18 @@ document.querySelectorAll('a[href="index.html"]').forEach(link => {
     });
 });
 
+// Handle navigation during splash screen
+document.querySelectorAll('.nav-menu a').forEach(link => {
+    link.addEventListener('click', function(e) {
+        // If we're currently showing splash screen, mark to skip splash on next page load
+        if (document.body.classList.contains('splash-active')) {
+            console.log('🚀 Navigation clicked during splash - will skip splash for next page');
+            // Set the flag so next page load skips splash
+            sessionStorage.setItem('splashShown', 'true');
+        }
+    });
+});
+
 // Set flag when navigating away from home page
 document.querySelectorAll('a[href="services.html"], a[href="portfolio.html"]').forEach(link => {
     link.addEventListener('click', function(e) {
@@ -87,6 +101,12 @@ const validationPatterns = {
     email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
     phone: /^[\+]?[1-9][\d]{0,15}$/
 };
+
+// Utility function to sanitize input
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return '';
+    return input.trim().replace(/[<>]/g, '');
+}
 
 // Form validation functions
 function validateField(field, pattern, errorMessage) {
@@ -254,7 +274,8 @@ class SplashScreenManager {
     
     init() {
         if (!this.splashScreen) {
-            console.error('Splash screen element not found!');
+            // No splash screen element - this is normal for non-home pages
+            console.log('ℹ️ No splash screen element on this page');
             return;
         }
         
@@ -286,9 +307,11 @@ class SplashScreenManager {
             this.footer.classList.add('visible');
         }
         
-        // Remove splash screen from DOM
+        // Remove splash screen from DOM (don't set sessionStorage here)
         setTimeout(() => {
-            this.cleanup();
+            if (this.splashScreen && this.splashScreen.parentNode) {
+                this.splashScreen.remove();
+            }
         }, 100);
     }
     
@@ -296,24 +319,30 @@ class SplashScreenManager {
         // Add splash-active class to body
         document.body.classList.add('splash-active');
         
-        // Ensure splash screen is visible
+        // Ensure splash screen is visible and on top
         this.splashScreen.style.setProperty('display', 'flex', 'important');
         this.splashScreen.style.setProperty('opacity', '1', 'important');
         this.splashScreen.style.setProperty('visibility', 'visible', 'important');
-        this.splashScreen.style.setProperty('z-index', '99999', 'important');
+        this.splashScreen.style.setProperty('z-index', '10000', 'important');
         this.splashScreen.classList.remove('fade-out');
         
-        // Hide main content initially with enhanced styling
+        // Make main content visible underneath splash (but with opacity 0 for fade effect)
+        // This prevents white flash - content is there, just not visible yet
         if (this.mainContent) {
             this.mainContent.classList.add('main-content-fade-in');
-            this.mainContent.style.transform = 'translateY(50px)';
-            this.mainContent.style.opacity = '0';
+            this.mainContent.style.visibility = 'visible';
+            this.mainContent.style.display = 'block';
+            this.mainContent.style.opacity = '0'; // Hidden but rendered
+            this.mainContent.style.transform = 'translateY(0)'; // Don't shift, just fade
+            this.mainContent.style.backgroundColor = 'var(--background-primary)';
         }
         
         if (this.footer) {
             this.footer.classList.add('main-content-fade-in');
-            this.footer.style.transform = 'translateY(30px)';
-            this.footer.style.opacity = '0';
+            this.footer.style.visibility = 'visible';
+            this.footer.style.display = 'block';
+            this.footer.style.opacity = '0'; // Hidden but rendered
+            this.footer.style.transform = 'translateY(0)'; // Don't shift, just fade
         }
         
         // Prevent body scroll during splash
@@ -321,13 +350,18 @@ class SplashScreenManager {
     }
     
     startTransitionSequence() {
-        // Mark splash as shown in session storage
-        sessionStorage.setItem('splashShown', 'true');
-        
-        // Start fade out earlier so content appears when text fades
-        setTimeout(() => {
-            this.startFadeOut();
-        }, 2100); // Start fade out when text starts fading (70% of 3s)
+        // Listen for the splash logo animation end
+        const logo = this.splashScreen.querySelector('.splash-logo h1');
+        if (logo) {
+            logo.addEventListener('animationend', () => {
+                this.startFadeOut();
+            }, { once: true });
+        } else {
+            // Fallback to timing if logo not found
+            setTimeout(() => {
+                this.startFadeOut();
+            }, 2100);
+        }
     }
     
     startFadeOut() {
@@ -337,30 +371,52 @@ class SplashScreenManager {
         // Add fade-out class to splash screen
         this.splashScreen.classList.add('fade-out');
         
-        // Reveal main content immediately (no delay)
-        this.revealMainContent();
+        // Listen for the splash's transform transition to end (this is what actually fires)
+        const handleTransitionEnd = (e) => {
+            // Respond to transform transition on the splash screen (opacity doesn't fire due to !important conflict)
+            if (e.propertyName === 'transform' && e.target === this.splashScreen) {
+                this.splashScreen.removeEventListener('transitionend', handleTransitionEnd);
+                // Remove splash-active class so header background is restored
+                document.body.classList.remove('splash-active');
+                // Reveal main content
+                this.revealMainContent();
+                // Cleanup after revealing
+                setTimeout(() => {
+                    this.cleanup();
+                }, 100);
+            }
+        };
         
-        // Remove splash screen after transition completes
+        this.splashScreen.addEventListener('transitionend', handleTransitionEnd);
+        
+        // Fallback timeout in case transitionend doesn't fire
         setTimeout(() => {
-            this.cleanup();
-        }, 1800); // Match the CSS transition duration
+            this.splashScreen.removeEventListener('transitionend', handleTransitionEnd);
+            if (this.isTransitioning) {
+                document.body.classList.remove('splash-active');
+                this.revealMainContent();
+                this.cleanup();
+            }
+        }, 2500);
     }
     
     revealMainContent() {
         // Re-enable body scroll
         document.body.style.overflow = '';
         
-        // Enhanced staggered reveal with different animations
+        // Fade in main content smoothly using requestAnimationFrame for smooth opacity transition
         const elements = [
-            { element: this.mainContent, delay: 200, transform: 'translateY(50px)' },
-            { element: this.footer, delay: 400, transform: 'translateY(30px)' }
+            { element: this.mainContent, delay: 0 },
+            { element: this.footer, delay: 100 }
         ].filter(item => item.element);
         
-        elements.forEach(({ element, delay, transform }) => {
+        elements.forEach(({ element, delay }) => {
             setTimeout(() => {
-                element.style.transition = 'all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                element.style.transform = 'translateY(0)';
-                element.style.opacity = '1';
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        element.style.opacity = '1';
+                    });
+                });
                 element.classList.add('visible');
             }, delay);
         });
@@ -368,7 +424,7 @@ class SplashScreenManager {
         // Add a subtle entrance animation to key sections
         setTimeout(() => {
             this.animateHeroSection();
-        }, 600);
+        }, 300); // Reduced delay for faster appearance
     }
     
     animateHeroSection() {
@@ -398,8 +454,7 @@ class SplashScreenManager {
     }
     
     cleanup() {
-        // Remove splash-active class from body
-        document.body.classList.remove('splash-active');
+        // Note: splash-active class is already removed in handleTransitionEnd
         
         if (this.splashScreen && this.splashScreen.parentNode) {
             // Ensure splash screen is completely hidden before removal
@@ -410,62 +465,22 @@ class SplashScreenManager {
             
             // Remove from DOM after a brief delay
             setTimeout(() => {
-                this.splashScreen.remove();
+                if (this.splashScreen && this.splashScreen.parentNode) {
+                    this.splashScreen.remove();
+                }
+                // ONLY set sessionStorage AFTER splash animation fully completes and element is removed
+                sessionStorage.setItem('splashShown', 'true');
+                console.log('✅ Splash animation complete - sessionStorage set');
             }, 100);
         }
         this.isTransitioning = false;
     }
 }
 
-// Check if splash should be skipped (ultra-simple logic)
+// Check if splash should be skipped - use the flag set by head script
 function shouldSkipSplash() {
-    console.log('🔍 Checking if splash should be skipped...');
-    
-    // Check if this is internal navigation (from URL parameter)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('internal') === 'true') {
-        console.log('⏭️ Skipping splash: internal navigation detected');
-        // Clean up the URL parameter
-        const url = new URL(window.location);
-        url.searchParams.delete('internal');
-        window.history.replaceState({}, '', url);
-        return true;
-    }
-    
-    // Check if we've already shown splash screen in this session
-    const splashShown = sessionStorage.getItem('splashShown');
-    console.log('📝 SessionStorage splashShown:', splashShown);
-    if (splashShown === 'true') {
-        console.log('⏭️ Skipping splash: already shown in this session');
-        return true;
-    }
-    
-    // Check if we're navigating back to home after being away
-    const navigatingToHome = sessionStorage.getItem('navigatingToHome');
-    const navigatedAwayFromHome = sessionStorage.getItem('navigatedAwayFromHome');
-    console.log('🏠 Navigating to home:', navigatingToHome, 'Navigated away:', navigatedAwayFromHome);
-    
-    if (navigatingToHome === 'true' && navigatedAwayFromHome === 'true') {
-        console.log('⏭️ Skipping splash: returning to home after navigation');
-        // Clean up the flags
-        sessionStorage.removeItem('navigatingToHome');
-        sessionStorage.removeItem('navigatedAwayFromHome');
-        return true;
-    }
-    
-    // Check if user is coming from another page on the same site
-    const referrer = document.referrer;
-    const currentDomain = window.location.origin;
-    console.log('🔗 Referrer:', referrer, 'Current domain:', currentDomain);
-    
-    // If referrer exists and is from the same domain, skip splash
-    if (referrer && referrer.startsWith(currentDomain)) {
-        console.log('⏭️ Skipping splash: coming from same domain');
-        return true;
-    }
-    
-    console.log('✅ Splash screen should be shown');
-    return false;
+    // Use the flag set by the head script (single source of truth)
+    return window.__skipSplash === true;
 }
 
 // Debug function to clear sessionStorage (for testing)
@@ -477,101 +492,48 @@ function clearSplashSession() {
 // Make it available globally for debugging
 window.clearSplashSession = clearSplashSession;
 
-// Initialize splash screen when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM Content Loaded - Initializing splash screen...');
-    
-    // Check if splash screen was already handled by head script
-    if (document.body.classList.contains('skip-splash')) {
-        console.log('✅ Splash screen already handled by head script');
-        return;
-    }
-    
-    // Add a small delay to ensure navigation flags are processed
-    setTimeout(() => {
-        // Check if splash should be skipped
-        if (shouldSkipSplash()) {
-            console.log('❌ Hiding splash screen immediately');
-            // Use CSS-only approach by adding body class
-            document.body.classList.add('skip-splash');
-            document.body.classList.remove('splash-active');
-            document.body.style.overflow = '';
-            
-            // Ensure main content is visible
-            const main = document.querySelector('main');
-            const footer = document.querySelector('footer');
-            if (main) {
-                main.style.opacity = '1';
-                main.style.transform = 'translateY(0)';
-                main.style.visibility = 'visible';
-                main.classList.add('visible');
-            }
-            if (footer) {
-                footer.style.opacity = '1';
-                footer.style.transform = 'translateY(0)';
-                footer.style.visibility = 'visible';
-                footer.classList.add('visible');
-            }
-            console.log('✅ Splash screen hidden via CSS');
-        } else {
-            console.log('🎬 Starting splash screen animation');
-            // Show splash screen
-            new SplashScreenManager();
-        }
-    }, 50); // Increased delay to ensure head script completes first
-});
+// Single, simple initialization - no double execution
+if (document.readyState === 'loading') {
+    // DOM hasn't loaded yet, wait for it
+    document.addEventListener('DOMContentLoaded', initializeSplashScreen);
+} else {
+    // DOM already loaded, initialize immediately
+    initializeSplashScreen();
+}
 
-// Fallback for immediate execution if DOM is already loaded
-if (document.readyState !== 'loading') {
-    console.log('⚡ DOM already loaded - Using fallback initialization...');
-    // DOM is already loaded
-    // Add a small delay to ensure navigation flags are processed
-    setTimeout(() => {
-        if (shouldSkipSplash()) {
-            console.log('❌ Fallback: Hiding splash screen immediately');
-            // Hide splash screen immediately and show main content
-            const splashScreen = document.getElementById('splash-screen');
-            const main = document.querySelector('main');
-            const footer = document.querySelector('footer');
-            
-            // Add skip-splash class and remove splash-active
-            document.body.classList.add('skip-splash');
-            document.body.classList.remove('splash-active');
-            
-            if (splashScreen) {
-                splashScreen.style.display = 'none';
-                splashScreen.style.visibility = 'hidden';
-                splashScreen.style.opacity = '0';
-                splashScreen.style.pointerEvents = 'none';
-                console.log('✅ Fallback: Splash screen hidden');
-            }
-            
-            if (main) {
-                main.style.opacity = '1';
-                main.style.transform = 'translateY(0)';
-                main.style.visibility = 'visible';
-                main.style.display = 'block';
-                main.classList.add('visible');
-                console.log('✅ Fallback: Main content shown');
-            }
-            
-            if (footer) {
-                footer.style.opacity = '1';
-                footer.style.transform = 'translateY(0)';
-                footer.style.visibility = 'visible';
-                footer.style.display = 'block';
-                footer.classList.add('visible');
-                console.log('✅ Fallback: Footer shown');
-            }
-            
-            // Re-enable body scroll
-            document.body.style.overflow = '';
-        } else {
-            console.log('🎬 Fallback: Starting splash screen animation');
-            // Show splash screen
-            new SplashScreenManager();
+function initializeSplashScreen() {
+    // Check the flag set by head script
+    if (shouldSkipSplash()) {
+        console.log('⏭️ Skipping splash screen');
+        // Ensure skip-splash class is applied
+        document.body.classList.add('skip-splash');
+        document.body.style.overflow = '';
+        
+        // Ensure main content is visible
+        const main = document.querySelector('main');
+        const footer = document.querySelector('footer');
+        const splashScreen = document.getElementById('splash-screen');
+        
+        if (splashScreen) {
+            splashScreen.style.display = 'none';
         }
-    }, 10); // Small delay to ensure flags are processed
+        
+        if (main) {
+            main.style.opacity = '1';
+            main.style.visibility = 'visible';
+            main.classList.add('visible');
+        }
+        
+        if (footer) {
+            footer.style.opacity = '1';
+            footer.style.visibility = 'visible';
+            footer.classList.add('visible');
+        }
+    } else {
+        console.log('🎬 Starting splash screen animation');
+        // Show splash screen
+        new SplashScreenManager();
+    }
 }
 
 // Calendly Integration

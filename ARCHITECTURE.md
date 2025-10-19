@@ -1,3 +1,86 @@
+You are an expert Next.js 14 (App Router) engineer working in a monorepo. Implement the “Final Cost-Effective API & Service Architecture (MongoDB + NextAuth)” for Lacque&Latte based on THIS spec:
+
+- DB: MongoDB Atlas (M0 Free)
+
+   mongodb+srv://Andrew:Zeus20230607@lacquelatte.7cwderu.mongodb.net/?retryWrites=true&
+  w=majority&appName=LacqueLatte
+
+  mongodb+srv://Andrew:Zeus20230607@lacquelatte.7cwderu.mongodb.net/lacque-latte?retryWrites=true&w=majority&appName=LacqueLatte
+  
+- Auth: Auth.js (NextAuth) + MongoDB Adapter
+- Hosting: Vercel
+- Email: SendGrid (but must run without a key via DRY-RUN mode)
+- SMS: Twilio (but must run without a key via DRY-RUN mode)
+- Contact form: handled in-house via SendGrid Mail Send API (no Web3Forms)
+- Public website + Private admin dashboard in the same Next.js app (separate routes)
+
+### Deliverables
+1) Create/Update these files (no secrets hardcoded):
+- `/docs/architecture-lacqueandlatte.md` ← include the content provided by the user (don’t edit meaning; minor formatting ok).
+- `.env.example` with placeholders:
+  - MONGODB_URI="mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority"
+  - NEXTAUTH_URL="https://<your-domain>"
+  - NEXTAUTH_SECRET="<generate>"
+  - SENDGRID_API_KEY="<optional-set-later>"
+  - SENDGRID_FROM="noreply@lacqueandlatte.ca"
+  - SENDGRID_TO="info@lacqueandlatte.ca"
+  - TWILIO_ACCOUNT_SID="<optional-set-later>"
+  - TWILIO_AUTH_TOKEN="<optional-set-later>"
+  - TWILIO_MESSAGING_SERVICE_SID="<optional-set-later>"
+  - FEATURE_EMAIL_ENABLED="false"
+  - FEATURE_SMS_ENABLED="false"
+  - FEATURE_CONSENT_REQUIRED="true"
+  - LEGAL_PRIVACY_CONTACT_EMAIL="privacy@lacqueandlatte.ca"
+  - LEGAL_BUSINESS_NAME="Lacque&Latte Nail Studio"
+- `/src/lib/db.ts` – single MongoDB client (cached for serverless). No connect on import; lazy connect in helper.
+- `/src/auth/config.ts` – NextAuth config with:
+  - Credentials provider (email+password hash via bcrypt)
+  - MongoDBAdapter (sessions persisted in Mongo)
+  - Secure cookies; production-ready options
+- `/src/app/(public)/contact/page.tsx` – Contact form UI with fields: name, email, phone (optional), message, and **required PIPEDA consent checkbox** (text sourced from env LEGAL_BUSINESS_NAME; link to /privacy).
+- `/src/app/api/contact/route.ts` – POST endpoint:
+  - Validates body; rejects if consent not checked and FEATURE_CONSENT_REQUIRED=true
+  - If FEATURE_EMAIL_ENABLED=false → respond 200 with `{dryRun:true}`
+  - If SENDGRID_API_KEY present and feature enabled → send email via SendGrid Mail Send API
+  - Minimal PII in the email body (name + contact + short message)
+  - Return {ok:true}
+- `/src/app/(admin)/dashboard/page.tsx` – protected page (requires Auth). Show mock widgets: Today’s Appointments, Upcoming, and a stub for “Export My Data” and “Delete My Data”.
+- `/src/middleware.ts` – protect `/dashboard` with Auth.js middleware.
+- `/src/app/api/sms/route.ts` – POST endpoint to send SMS reminders:
+  - If FEATURE_SMS_ENABLED=false or no Twilio keys → return `{dryRun:true}`
+  - If enabled → call Twilio; include CASL-compliant “Reply STOP to unsubscribe” text
+- `/src/app/layout.tsx` – Global footer with links: Privacy Policy (/privacy), Terms (/terms), Contact mailto: from env LEGAL_PRIVACY_CONTACT_EMAIL
+- `/src/app/privacy/page.md` & `/src/app/terms/page.md` – stub pages (content can be replaced later)
+
+2) Data models (Mongo collections)
+- `users` (Auth.js default via adapter)
+- `appointments` { _id, clientName, clientEmail, phone?, service, start, end, notes?, consentAccepted:boolean, consentDate:Date, createdAt, updatedAt }
+- `messages` (optional) to log contact form submissions with consent fields.
+
+3) Quality & Security
+- TypeScript everywhere, strict mode
+- Input validation with zod
+- No secrets in code or git history
+- Minimal PII in logs
+- Lint + basic Jest tests for:
+  - contact API (dry-run vs real send)
+  - auth protection on /dashboard
+
+4) Feature flags behavior (must work NOW without buying APIs):
+- If `FEATURE_EMAIL_ENABLED=false` or `SENDGRID_API_KEY` missing → contact API returns `{dryRun:true}` and logs a friendly message.
+- If `FEATURE_SMS_ENABLED=false` or Twilio keys missing → SMS API returns `{dryRun:true}`.
+- App should deploy and run fully with only `MONGODB_URI`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`.
+
+5) Acceptance Criteria
+- `/contact` renders form with “I consent…” required checkbox + link to /privacy.
+- Submitting contact with default flags returns `{ok:true, dryRun:true}`.
+- `/dashboard` requires login; unauthenticated users are redirected to `/api/auth/signin`.
+- Code compiles on Vercel with no runtime secrets; local dev works with `.env.local`.
+
+Implement now. Do NOT include any real keys. Keep everything production-safe by default.
+
+
+
 # 💅 Lacque&Latte Nail Studio  
 ## Final Cost-Effective API & Service Architecture (MongoDB + NextAuth Version)
 
