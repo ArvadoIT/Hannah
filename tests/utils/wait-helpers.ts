@@ -85,19 +85,10 @@ export async function waitForClassRemoved(
 }
 
 /**
- * Wait for page to be interactive (no splash screen, body ready)
+ * Wait for page to be interactive (body ready)
  */
 export async function waitForPageInteractive(page: Page, timeout = 10000): Promise<void> {
   await page.waitForLoadState('domcontentloaded');
-  
-  // Wait for splash screen to complete (if present)
-  const splashScreen = page.locator('#splash-screen');
-  const hasSplash = await splashScreen.count() > 0;
-  
-  if (hasSplash) {
-    await waitForClassRemoved(page.locator('body'), 'splash-active', timeout);
-  }
-  
   await page.waitForLoadState('networkidle', { timeout });
 }
 

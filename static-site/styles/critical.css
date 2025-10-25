@@ -1,0 +1,128 @@
+/* Critical CSS - Minimal styles for first paint (above-the-fold content only) */
+/* This file should be inlined in <head> for fastest possible render */
+
+/* CSS Variables - Essential only */
+:root {
+    /* Colors */
+    --primary-color: #8b7355;
+    --primary-dark: #6d5a42;
+    --text-primary: #2c2c2c;
+    --text-secondary: #666;
+    --background-primary: #faf8f5;
+    --background-secondary: #f5f2ed;
+    --background-accent: #e8ddd4;
+    --white: #ffffff;
+    --border-color: #e8ddd4;
+    
+    /* Typography */
+    --font-primary: 'Inter', sans-serif;
+    --font-accent: 'Playfair Display', serif;
+    
+    /* Transitions */
+    --transition-fast: 0.3s ease;
+    --transition-slow: 0.6s ease;
+}
+
+/* Reset - Critical only */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Prevent white flash - CRITICAL for UX */
+html, body {
+    background-color: var(--background-primary) !important;
+}
+
+html {
+    background: var(--background-primary) !important;
+}
+
+body {
+    font-family: var(--font-primary);
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--background-primary) !important;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+}
+
+/* Fixed background layer - prevents white flash */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-color: var(--background-primary);
+    z-index: -1;
+}
+
+/* Header - Above the fold */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 20000;
+    transition: all var(--transition-fast);
+}
+
+.navbar {
+    background: rgba(250, 248, 245, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Container */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Hero Section - Above the fold */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hide below-fold content initially to prevent layout shifts */
+.services-preview,
+.about-preview,
+.gallery-section,
+.reviews-section,
+.cta-section,
+footer {
+    visibility: hidden;
+}
+
+/* Show after styles load */
+body.styles-loaded .services-preview,
+body.styles-loaded .about-preview,
+body.styles-loaded .gallery-section,
+body.styles-loaded .reviews-section,
+body.styles-loaded .cta-section,
+body.styles-loaded footer {
+    visibility: visible;
+}
+
+/* Mobile viewport fix */
+@media screen and (max-width: 768px) {
+    .hero {
+        padding: 3rem 0;
+    }
+}
+

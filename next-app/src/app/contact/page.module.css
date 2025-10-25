@@ -1,0 +1,57 @@
+/* Contact Page Styles */
+.contactSection {
+  padding: var(--spacing-xxl) 0;
+  min-height: calc(100vh - 200px);
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.contactContent {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
+}
+
+.contactInfo h2 {
+  margin-bottom: var(--spacing-md);
+}
+
+.contactInfo p {
+  margin-bottom: var(--spacing-sm);
+}
+
+.contactForm {
+  background-color: var(--background-alt);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius);
+}
+
+.alert {
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-md);
+}
+
+.alertSuccess {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alertError {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+@media (max-width: 768px) {
+  .contactContent {
+    grid-template-columns: 1fr;
+  }
+}
+

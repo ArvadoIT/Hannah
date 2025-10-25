@@ -1,12 +1,10 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { waitForClassRemoved } from '../utils/wait-helpers';
 
 /**
  * Home Page Object
  */
 export class HomePage extends BasePage {
-  readonly splashScreen: Locator;
   readonly heroSection: Locator;
   readonly heroTitle: Locator;
   readonly ctaButton: Locator;
@@ -19,9 +17,6 @@ export class HomePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    
-    // Splash screen
-    this.splashScreen = page.locator('#splash-screen');
     
     // Hero section
     this.heroSection = page.locator('#home.hero');
@@ -49,35 +44,12 @@ export class HomePage extends BasePage {
   }
 
   /**
-   * Check if splash screen is active
-   */
-  async isSplashActive(): Promise<boolean> {
-    const bodyClasses = await this.page.locator('body').getAttribute('class');
-    return bodyClasses?.includes('splash-active') || false;
-  }
-
-  /**
-   * Wait for splash screen to complete
-   */
-  async waitForSplashComplete(): Promise<void> {
-    const hasSplashClass = await this.isSplashActive();
-    
-    if (hasSplashClass) {
-      await waitForClassRemoved(this.page.locator('body'), 'splash-active', 10000);
-    }
-    
-    // Wait for splash screen to be hidden
-    await this.splashScreen.waitFor({ state: 'hidden', timeout: 10000 });
-  }
-
-  /**
-   * Check if page is interactive (no splash, content visible)
+   * Check if page is interactive (content visible)
    */
   async isPageInteractive(): Promise<boolean> {
-    const splashActive = await this.isSplashActive();
     const heroVisible = await this.heroSection.isVisible();
     
-    return !splashActive && heroVisible;
+    return heroVisible;
   }
 
   /**
@@ -109,16 +81,6 @@ export class HomePage extends BasePage {
     return bgImage;
   }
 
-  /**
-   * Check if navigation bar is visible on splash screen
-   */
-  async isNavVisibleOnSplash(): Promise<boolean> {
-    const splashActive = await this.isSplashActive();
-    if (!splashActive) return false;
-    
-    const nav = this.page.locator('header nav');
-    return await nav.isVisible();
-  }
 
   /**
    * Click CTA button in hero section
