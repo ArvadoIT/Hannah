@@ -103,15 +103,40 @@ export default function AdminPage() {
 
   // Handle Escape key to close modal
   useEffect(() => {
+    // Safety check for browser environment
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && selectedAppointment) {
-        setSelectedAppointment(null);
+      try {
+        if (e.key === 'Escape' && selectedAppointment) {
+          setSelectedAppointment(null);
+        }
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('AdminPage: Error handling escape key:', error);
+        }
       }
     };
 
     if (selectedAppointment) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
+      try {
+        document.addEventListener('keydown', handleEscape);
+        return () => {
+          try {
+            document.removeEventListener('keydown', handleEscape);
+          } catch (error) {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('AdminPage: Error removing escape listener:', error);
+            }
+          }
+        };
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('AdminPage: Error adding escape listener:', error);
+        }
+      }
     }
   }, [selectedAppointment]);
 

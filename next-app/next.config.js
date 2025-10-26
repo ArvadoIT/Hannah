@@ -4,7 +4,16 @@ const nextConfig = {
   
   // Image optimization
   images: {
-    domains: ['lacqueandlatte.ca', 'images.unsplash.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lacqueandlatte.ca',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
     formats: ['image/avif', 'image/webp'],
   },
 

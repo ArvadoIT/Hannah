@@ -47,7 +47,6 @@ export const navigationLinks = {
   main: [
     { label: 'Home', href: 'index.html' },
     { label: 'Services', href: 'services.html' },
-    { label: 'Portfolio', href: 'portfolio.html' },
   ],
   admin: [
     { label: 'Dashboard', view: 'dashboard' },
@@ -64,13 +63,6 @@ export const services = [
   'Nail Art',
 ];
 
-export const portfolioFilters = [
-  'All',
-  'Manicure',
-  'Extensions',
-  'Nail Art',
-  'Pedicure',
-];
 
 /**
  * Generate a unique email for testing

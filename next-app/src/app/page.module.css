@@ -7,23 +7,15 @@
   background-color: var(--background-primary);
   background-image: url('/images/DOWNroundflower.png');
   background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 100% 100%;
+  background-position: center top;
+  background-size: cover;
   position: relative;
   overflow: hidden;
-  padding: var(--spacing-xxl) var(--spacing-md);
+  padding: 0;
+  margin-top: 0;
 }
 
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(250, 248, 245, 0.5);
-  z-index: 3;
-}
+
 
 .heroContent {
   max-width: 1200px;
@@ -206,20 +198,11 @@
   background-image: url('/images/roundflower.png');
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 100% 100%;
+  background-size: 150% 150%;
+  background-attachment: fixed;
   position: relative;
 }
 
-.aboutSection::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(250, 248, 245, 0.5);
-  z-index: 1;
-}
 
 .aboutSection .container {
   position: relative;
@@ -266,26 +249,123 @@
   margin: 0;
 }
 
+/* New About Section Styles */
+.aboutContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 40px;
+}
+
+.aboutContentLayout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 3rem;
+}
+
+.aboutTextContent {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px);
+  padding: 50px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 1s ease forwards;
+  min-width: 300px;
+}
+
+.aboutTitle {
+  font-family: var(--font-accent);
+  font-size: clamp(2rem, 4vw, 2.4rem);
+  font-weight: 400;
+  color: var(--text-primary);
+  text-align: left;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.divider {
+  width: 80px;
+  height: 2px;
+  background-color: #b99c7a;
+  margin: 10px 0 25px 0;
+  border-radius: 4px;
+}
+
+.highlight {
+  color: #b99c7a;
+  font-weight: 500;
+}
+
+.introText {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  text-align: left;
+  margin: 0 0 1.5rem 0;
+  padding: 0;
+}
+
+.introTextSecondary {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}
+
+.signature {
+  color: #b99c7a;
+  font-family: var(--font-signature), cursive;
+  font-size: 1.8rem;
+  text-align: right;
+  margin-top: 1.5rem;
+}
+
+.aboutImage {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 300px;
+}
+
+.aboutImageImg {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.aboutImageImg:hover {
+  transform: scale(1.03);
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
 .galleryPreview {
   padding: 100px 0;
   background-color: var(--background-secondary);
   background-image: url('/images/DOWNroundflower.png');
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 100% 100%;
+  background-size: 150% 150%;
+  background-attachment: fixed;
   position: relative;
 }
 
-.galleryPreview::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(250, 248, 245, 0.5);
-  z-index: 1;
-}
 
 .galleryPreview .container {
   position: relative;
@@ -354,6 +434,44 @@
 }
 
 @media (max-width: 768px) {
+  .hero {
+    padding: 0 !important;
+    margin-top: 0 !important;
+    background-size: 200% auto;
+    background-attachment: scroll;
+    background-position: center center;
+  }
+
+  .aboutSection {
+    background-size: 200% auto;
+    background-attachment: scroll;
+    background-position: center center;
+  }
+
+  .aboutContainer {
+    padding: 40px 20px;
+  }
+
+  .aboutContentLayout {
+    flex-direction: row;
+    gap: 2rem;
+  }
+
+  .aboutTextContent {
+    padding: 30px;
+    min-width: 250px;
+  }
+
+  .aboutImage {
+    min-width: 250px;
+  }
+
+  .galleryPreview {
+    background-size: 200% auto;
+    background-attachment: scroll;
+    background-position: center center;
+  }
+
   .servicesGrid {
     grid-template-columns: 1fr;
   }
@@ -362,8 +480,93 @@
     grid-template-columns: 1fr;
   }
 
+  .aboutContainer {
+    padding: 60px 20px;
+  }
+
+  .aboutContentLayout {
+    flex-direction: row;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .aboutTextContent {
+    flex: 1;
+    padding: 30px;
+    min-width: 300px;
+  }
+
+  .aboutImage {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .aboutImageImg {
+    max-width: 100%;
+  }
+
+  .introText,
+  .introTextSecondary {
+    font-size: 1rem;
+  }
+
+  .signature {
+    font-size: 1.1rem;
+  }
+
   .galleryGridPreview {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* iPhone specific optimizations */
+@media (max-width: 414px) {
+  .hero {
+    background-size: 250% auto;
+    background-position: center center;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  .aboutSection,
+  .galleryPreview {
+    background-size: 250% auto;
+    background-position: center center;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .hero {
+    min-height: -webkit-fill-available;
+    background-size: 250% auto;
+    background-attachment: scroll;
+    background-position: center center;
+  }
+
+  .aboutSection,
+  .galleryPreview {
+    background-size: 250% auto;
+    background-position: center center;
+  }
+
+  /* Animation optimizations for mobile */
+  .heroText h1,
+  .heroText p,
+  .ctaButton {
+    /* Reduce animation distance on mobile for better performance */
+    animation-duration: 0.6s;
+  }
+  
+  .aboutTextContent,
+  .aboutImage {
+    /* Ensure animations work smoothly on mobile */
+    will-change: transform, opacity;
+  }
+  
+  .aboutImageImg {
+    /* Optimize image animations for mobile */
+    transform: translateZ(0); /* Force hardware acceleration */
   }
 }
 

@@ -4,14 +4,15 @@
  */
 
 import type { Metadata } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Inter, Playfair_Display, Great_Vibes } from 'next/font/google';
 import './globals.css';
 import Navigation from '@/components/Navigation';
+import ClientStyleHandler from '@/components/ClientStyleHandler';
 
 const inter = Inter({ 
   subsets: ['latin'],
   variable: '--font-inter',
-  display: 'swap', // Changed from 'block' to 'swap' for better FOUC prevention
+  display: 'swap',
   preload: true,
   fallback: ['system-ui', '-apple-system', 'sans-serif'],
 });
@@ -19,9 +20,18 @@ const inter = Inter({
 const playfair = Playfair_Display({ 
   subsets: ['latin'],
   variable: '--font-playfair',
-  display: 'swap', // Changed from 'block' to 'swap' for better FOUC prevention
+  display: 'swap',
   preload: true,
   fallback: ['Georgia', 'serif'],
+});
+
+const greatVibes = Great_Vibes({ 
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-great-vibes',
+  display: 'swap',
+  preload: true,
+  fallback: ['cursive', 'serif'],
 });
 
 export const metadata: Metadata = {
@@ -45,24 +55,15 @@ export default function RootLayout({
   const privacyEmail = process.env.LEGAL_PRIVACY_CONTACT_EMAIL || 'privacy@lacqueandlatte.ca';
 
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`} style={{ backgroundColor: '#faf8f5' }}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${greatVibes.variable}`}>
       <head>
         {/* Preconnect to external domains for faster resource loading */}
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
-        {/* Minimal inline CSS - all styles now in globals.css which loads synchronously */}
-        <style dangerouslySetInnerHTML={{__html: `
-          /* Only absolutely critical styles that must be inline */
-          html, body {
-            background-color: #faf8f5 !important;
-            margin: 0;
-            padding: 0;
-          }
-        `}} />
       </head>
-      <body style={{ backgroundColor: '#faf8f5' }}>
+      <body suppressHydrationWarning>
+        <ClientStyleHandler />
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <Navigation />
         <main id="main-content">

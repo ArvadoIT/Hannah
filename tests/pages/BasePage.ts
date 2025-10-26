@@ -11,7 +11,6 @@ export class BasePage {
   readonly navLinks: {
     home: Locator;
     services: Locator;
-    portfolio: Locator;
   };
   readonly footer: Locator;
   readonly skipLink: Locator;
@@ -25,7 +24,6 @@ export class BasePage {
     this.navLinks = {
       home: page.locator('.nav-menu a[href="index.html"]'),
       services: page.locator('.nav-menu a[href="services.html"]'),
-      portfolio: page.locator('.nav-menu a[href="portfolio.html"]'),
     };
     
     // Footer
@@ -92,16 +90,6 @@ export class BasePage {
     await this.page.waitForURL(/services\.html/);
   }
 
-  /**
-   * Navigate to portfolio page
-   */
-  async navigateToPortfolio(): Promise<void> {
-    // Find any visible link to portfolio page (handles both desktop and mobile)
-    const portfolioLink = this.page.locator('a[href="portfolio.html"]').first();
-    await portfolioLink.scrollIntoViewIfNeeded();
-    await portfolioLink.click();
-    await this.page.waitForURL(/portfolio\.html/);
-  }
 
   /**
    * Get current page URL

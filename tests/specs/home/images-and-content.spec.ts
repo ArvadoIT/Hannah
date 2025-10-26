@@ -112,7 +112,6 @@ test.describe('Home Page Images and Content', () => {
     const exploreServicesBtn = page.locator('.intro-actions a[href="services.html"]');
     await expect(exploreServicesBtn).toBeVisible();
 
-    const viewPortfolioBtn = page.locator('.intro-actions a[href="portfolio.html"]');
     await expect(viewPortfolioBtn).toBeVisible();
   });
 

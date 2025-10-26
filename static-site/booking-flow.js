@@ -232,6 +232,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset time selection
         selectedTimeElement = null;
         document.getElementById('continue-to-contact').disabled = true;
+        
+        // Auto-scroll to time section on mobile devices (iPhone and similar)
+        if (window.innerWidth <= 768) {
+            setTimeout(() => {
+                const timeSection = document.getElementById('time-section');
+                if (timeSection) {
+                    timeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        }
     }
 
     function generateTimeSlots(date) {

@@ -11,6 +11,7 @@ import { bookingFormSchema } from '@/lib/validators';
 import { sendAppointmentConfirmation } from '@/lib/email';
 import { ZodError } from 'zod';
 import { ObjectId } from 'mongodb';
+// Note: sendAppointmentConfirmationSms is imported dynamically in POST handler
 
 /**
  * GET - Retrieve appointments

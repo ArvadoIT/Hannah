@@ -50,6 +50,8 @@ body {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     min-height: 100vh;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* Fixed background layer - prevents white flash */
@@ -65,9 +67,13 @@ body::before {
 header {
     position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     width: 100%;
     z-index: 20000;
     transition: all var(--transition-fast);
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .navbar {
@@ -94,7 +100,8 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4rem 0;
+    padding: 0 !important;
+    margin-top: 0 !important;
     position: relative;
     overflow: hidden;
 }
@@ -122,7 +129,8 @@ body.styles-loaded footer {
 /* Mobile viewport fix */
 @media screen and (max-width: 768px) {
     .hero {
-        padding: 3rem 0;
+        padding: 0 !important;
+        margin-top: 0 !important;
     }
 }
 

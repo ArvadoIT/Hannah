@@ -2,7 +2,7 @@
 .pageHero {
   padding: 120px 0 80px;
   background-color: var(--background-primary);
-  background-image: url('/images/roundflower.png');
+  background-image: url('/images/head2.png');
   background-repeat: no-repeat;
   background-position: center center;
   background-size: 100% 100%;
@@ -31,13 +31,16 @@
 .pageHero h1 {
   font-family: var(--font-accent);
   font-size: clamp(2.5rem, 5vw, 3.5rem);
-  color: var(--text-primary);
+  color: #ffffff;
   margin-bottom: var(--spacing-md);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .pageHero p {
   font-size: 1.125rem;
-  color: var(--text-secondary);
+  color: #ffffff;
   line-height: 1.7;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  font-weight: 400;
 }
 

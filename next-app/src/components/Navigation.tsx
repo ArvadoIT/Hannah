@@ -16,18 +16,44 @@ export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    // Safety check for browser environment
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      try {
+        setIsScrolled(window.scrollY > 50);
+      } catch (error) {
+        // Handle scroll errors gracefully
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Navigation: Error handling scroll:', error);
+        }
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    try {
+      window.addEventListener('scroll', handleScroll);
+      return () => {
+        try {
+          window.removeEventListener('scroll', handleScroll);
+        } catch (error) {
+          // Handle cleanup errors gracefully
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Navigation: Error removing scroll listener:', error);
+          }
+        }
+      };
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Navigation: Error adding scroll listener:', error);
+      }
+    }
   }, []);
 
   const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '/services', label: 'Services' },
-    { href: '/portfolio', label: 'Portfolio' },
+    { href: '/services', label: 'Book now' },
     { href: '/contact', label: 'Contact' },
   ];
 

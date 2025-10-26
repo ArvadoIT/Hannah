@@ -13,4 +13,3 @@ Disallow: /add-reviews-helper.html
 # Allow all other pages
 Allow: /index.html
 Allow: /services.html
-Allow: /portfolio.html

@@ -89,10 +89,10 @@
             min-height: 100vh;
         }
         body::before { content: ''; position: fixed; inset: 0; background-color: var(--background-primary); z-index: -1; }
-        header { position: fixed; top: 0; width: 100%; z-index: 20000; transition: all var(--transition-fast); }
+        header { position: fixed; top: 0; width: 100%; z-index: 20000; transition: all var(--transition-fast); margin: 0; padding: 0; }
         .navbar { background: rgba(250, 248, 245, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 1rem 0; box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05); display: flex; justify-content: space-between; align-items: center; }
         .container { width: 90%; max-width: 1200px; margin: 0 auto; }
-        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 4rem 0; position: relative; overflow: hidden; }
+        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: 0; position: relative; overflow: hidden; }
         .services-preview, .about-preview, .gallery-section, .reviews-section, .cta-section, footer { visibility: hidden; }
         body.styles-loaded .services-preview, body.styles-loaded .about-preview, body.styles-loaded .gallery-section, body.styles-loaded .reviews-section, body.styles-loaded .cta-section, body.styles-loaded footer { visibility: visible; }
     </style>
@@ -140,8 +140,7 @@
                 </div>
                 <ul class="nav-menu" role="menubar">
                     <li role="none"><a href="index.html" role="menuitem" aria-label="Go to home section">Home</a></li>
-                    <li role="none"><a href="services.html" role="menuitem" aria-label="View our services">Services</a></li>
-                    <li role="none"><a href="portfolio.html" role="menuitem" aria-label="View our portfolio">Portfolio</a></li>
+                    <li role="none"><a href="services.html" role="menuitem" aria-label="Book now">Book now</a></li>
                 </ul>
                 <button class="hamburger" aria-label="Toggle mobile menu" aria-expanded="false">
                     <span></span>
@@ -170,10 +169,9 @@
             <div class="container">
                 <div class="intro-content">
                     <h2 id="intro-title" class="section-title">Welcome to Lacque&latte</h2>
-                    <p class="intro-text">Discover our comprehensive range of nail services and explore our stunning portfolio of work. From Russian manicures to custom nail art, we create beautiful, long-lasting results that express your unique style.</p>
+                    <p class="intro-text">Discover our comprehensive range of nail services. From Russian manicures to custom nail art, we create beautiful, long-lasting results that express your unique style.</p>
                     <div class="intro-actions">
                         <a href="services.html" class="cta-button secondary" aria-label="Explore our services">Explore Services</a>
-                        <a href="portfolio.html" class="cta-button outline" aria-label="View our portfolio">View Portfolio</a>
                     </div>
                 </div>
             </div>
@@ -182,21 +180,31 @@
         <!-- About Section -->
         <section id="about" class="about" aria-labelledby="about-title">
             <div class="container">
-                <div class="about-content">
-                    <article class="about-text">
-                        <h2 id="about-title">About Our Studio</h2>
-                        <p>Welcome to Lacque&latte, where we combine modern aesthetics with exceptional nail care. Our serene, minimalist space is designed to provide you with a tranquil experience while our skilled technicians create beautiful, long-lasting nail art.</p>
-                        <p>We believe in using only the highest quality products and maintaining the highest standards of hygiene and safety. Every visit is an opportunity to relax, rejuvenate, and express your personal style.</p>
+                <div class="about-content-layout">
+                    <article class="about-text-content">
+                        <h2 id="about-title" class="about-title">About Us</h2>
+                        <div class="about-divider"></div>
+                        <p class="intro-text">
+                          At Lacque&Latte, <span class="highlight">beauty</span> is more than a service — it's an experience. Founded by Hannah, 
+                          a Persian artist with a passion for <span class="highlight">elegance</span> and precision, our studio redefines nail care 
+                          through the perfect harmony of <span class="highlight">artistry</span> and serenity. Inspired by the soft tones of the 
+                          Mediterranean and the timeless grace of Persian beauty, every detail of our space is designed 
+                          to make you feel at ease and indulged.
+                        </p>
+                        <p class="intro-text-secondary">
+                          From meticulous Russian manicures to bespoke nail art crafted with professional-grade products, 
+                          we bring your vision to life with care, creativity, and unmatched expertise. Step into a world 
+                          where luxury meets <span class="highlight">tranquility</span> — sip your latte, unwind, and let us perfect the finer details.
+                        </p>
+                        <div class="about-signature">Elegance in every detail. — Hannah</div>
                     </article>
-                    <div class="about-image">
-                        <div class="about-niche">
-                            <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&h=600&fit=crop&crop=center" 
-                                 alt="Interior of Lacque&latte nail studio showing modern minimalist design" 
-                                 class="about-display" 
-                                 loading="lazy"
-                                 width="500"
-                                 height="600">
-                        </div>
+                    <div class="about-image-container">
+                        <img src="images/pocket.png" 
+                             alt="Lacque & Latte Nail Studio tools and flowers" 
+                             class="about-image-img" 
+                             loading="lazy"
+                             width="500"
+                             height="600">
                     </div>
                 </div>
             </div>

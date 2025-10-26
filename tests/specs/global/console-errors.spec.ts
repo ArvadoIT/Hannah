@@ -5,7 +5,6 @@ test.describe('Console Errors', () => {
   const keyPages = [
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/services.html' },
-    { name: 'Portfolio', path: '/portfolio.html' },
     { name: 'Admin', path: '/admin.html' },
   ];
 
@@ -35,7 +34,6 @@ test.describe('Console Errors', () => {
     await page.click('a[href="services.html"]');
     await page.waitForLoadState('networkidle');
 
-    await page.click('a[href="portfolio.html"]');
     await page.waitForLoadState('networkidle');
 
     await page.click('a[href="index.html"]');

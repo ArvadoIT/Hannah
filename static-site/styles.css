@@ -68,6 +68,8 @@ body {
     text-rendering: optimizeLegibility;
     /* Prevent white flash during transitions */
     min-height: 100vh;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* Fixed fallback background layer (never shows white) */
@@ -132,6 +134,8 @@ main {
     opacity: 1;
     transform: translateY(0);
     visibility: visible;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* Main content visibility */
@@ -185,6 +189,8 @@ footer.visible {
 header {
     position: fixed !important;
     top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     width: 100% !important;
     z-index: 20000 !important;
     opacity: 1 !important;
@@ -192,6 +198,8 @@ header {
     display: block !important;
     height: auto !important;
     min-height: 80px !important;
+    margin: 0 !important;
+    padding: 0 !important;
     transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -334,6 +342,8 @@ header {
     align-items: center;
     position: relative;
     overflow: hidden;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 .hero::before {
@@ -631,7 +641,7 @@ header {
 .page-hero {
     padding: 120px 0 80px;
     background-color: var(--background-primary);
-    background-image: url('images/roundflower.png');
+    background-image: url('images/head2.png');
     background-repeat: no-repeat;
     background-position: center center;
     background-size: 100% 100%;
@@ -661,16 +671,18 @@ header {
     font-family: var(--font-accent);
     font-size: 3.5rem;
     font-weight: 400;
-    color: var(--text-primary);
+    color: #ffffff;
     margin-bottom: var(--spacing-md);
     letter-spacing: -0.02em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .page-hero p {
     font-size: 1.25rem;
-    color: var(--text-secondary);
+    color: #ffffff;
     line-height: 1.7;
-    font-weight: 300;
+    font-weight: 400;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 /* Services Overview */
@@ -1328,6 +1340,8 @@ header {
 @media (max-width: 768px) {
     .page-hero h1 {
         font-size: 2.5rem;
+        color: #ffffff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
     .service-details-grid {
@@ -1363,6 +1377,8 @@ header {
 @media (max-width: 480px) {
     .page-hero h1 {
         font-size: 2rem;
+        color: #ffffff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
     .service-detail-card,
@@ -1450,78 +1466,109 @@ header {
 .about {
     padding: 100px 0;
     background: var(--background-primary);
-    background-image: url('images/DOWNroundflower.png');
+    background-image: url('images/roundflower.png');
     background-repeat: no-repeat;
     background-position: center center;
-    background-size: 100% 100%;
+    background-size: 150% 150%;
+    background-attachment: fixed;
     position: relative;
-}
-
-.about::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(250, 248, 245, 0.5);
-    z-index: 1;
 }
 
 .about .container {
     position: relative;
     z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
 }
 
-.about-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+.about-content-layout {
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 3rem;
 }
 
-.about-text h2 {
-    font-size: 2.5rem;
-    font-weight: 300;
-    color: #2c2c2c;
-    margin-bottom: 2rem;
+.about-text-content {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 50px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    min-width: 300px;
 }
 
-.about-text p {
-    color: #666;
-    margin-bottom: 1.5rem;
+.about-title {
+    font-family: var(--font-accent);
+    font-size: clamp(2rem, 4vw, 2.4rem);
+    font-weight: 400;
+    color: var(--text-primary);
+    text-align: left;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+}
+
+.about-divider {
+    width: 80px;
+    height: 2px;
+    background-color: #b99c7a;
+    margin: 10px 0 25px 0;
+    border-radius: 4px;
+}
+
+.highlight {
+    color: #b99c7a;
+    font-weight: 500;
+}
+
+.intro-text {
+    font-size: 1.125rem;
     line-height: 1.8;
-    font-size: 1.1rem;
+    color: var(--text-secondary);
+    text-align: left;
+    margin: 0 0 1.5rem 0;
+    padding: 0;
 }
 
-.about-image {
+.intro-text-secondary {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    text-align: left;
+    margin: 0;
+    padding: 0;
+}
+
+.about-signature {
+    color: #b99c7a;
+    font-family: var(--font-accent);
+    font-size: 1.8rem;
+    text-align: right;
+    margin-top: 1.5rem;
+    font-style: italic;
+}
+
+.about-image-container {
+    flex: 1;
     display: flex;
     justify-content: center;
-}
-
-.about-niche {
-    width: 400px;
-    height: 500px;
-    background: linear-gradient(135deg, #e8ddd4 0%, #d4c7b8 100%);
-    border-radius: 50% 40% 60% 30%;
-    display: flex;
     align-items: center;
-    justify-content: center;
-    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.1);
-    position: relative;
+    min-width: 300px;
 }
 
-.about-display {
+.about-image-img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50% 40% 60% 30%;
-    position: relative;
-    transition: transform var(--transition-fast);
+    max-width: 500px;
+    border-radius: 20px;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
 }
 
-.about-display:hover {
-    transform: scale(1.02);
+.about-image-img:hover {
+    transform: scale(1.03);
 }
 
 /* Contact Section */
@@ -1741,6 +1788,8 @@ header {
         height: 100vh;
         background-size: cover;
         background-position: center;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
     
     .hero-content {
@@ -1786,25 +1835,28 @@ header {
     }
     
     /* About Section */
-    .about-content {
-        grid-template-columns: 1fr;
+    .about {
+        background-size: 200% auto;
+        background-attachment: scroll;
+    }
+    
+    .about .container {
+        padding: 0 20px;
+    }
+    
+    .about-content-layout {
+        flex-direction: row;
         gap: 2rem;
-        text-align: center;
     }
     
-    .about-text h2 {
-        font-size: 2rem;
-        margin-bottom: var(--spacing-md);
+    .about-text-content {
+        flex: 1;
+        padding: 30px;
+        min-width: 300px;
     }
     
-    .about-text p {
-        font-size: 1rem;
-        margin-bottom: var(--spacing-md);
-    }
-    
-    .about-niche {
-        width: 280px;
-        height: 350px;
+    .about-signature {
+        font-size: 1.4rem;
     }
     
     /* Contact Section */
@@ -1919,19 +1971,12 @@ header {
     }
     
     /* About Section */
-    .about-text h2 {
-        font-size: 1.7rem;
-        margin-bottom: var(--spacing-sm);
+    .about-text-content {
+        padding: 25px;
     }
     
-    .about-text p {
-        font-size: 0.95rem;
-        margin-bottom: var(--spacing-sm);
-    }
-    
-    .about-niche {
-        width: 250px;
-        height: 300px;
+    .about-signature {
+        font-size: 1.2rem;
     }
     
     /* Cards */
@@ -1973,7 +2018,7 @@ header {
 /* ===== BOOKING FLOW STYLES ===== */
 
 .booking-flow-container {
-    padding: 80px 0;
+    padding: 100px 0 80px;
     background: var(--background-primary);
     min-height: 80vh;
 }
@@ -2688,6 +2733,11 @@ header {
         gap: 1.5rem;
     }
     
+    /* Add scroll padding for better mobile scroll positioning */
+    .time-section {
+        scroll-margin-top: 80px;
+    }
+    
     .service-detail-card {
         padding: 1.5rem;
     }
@@ -2781,9 +2831,12 @@ header {
         font-size: 1.6rem;
     }
     
-    .about-niche {
-        width: 220px;
-        height: 280px;
+    .about-text-content {
+        padding: 20px;
+    }
+    
+    .about-signature {
+        font-size: 1rem;
     }
     
     /* Booking flow optimizations for larger iPhones */
@@ -2836,9 +2889,8 @@ header {
         font-size: 0.95rem;
     }
     
-    .about-niche {
-        width: 200px;
-        height: 250px;
+    .about-text-content {
+        padding: 20px;
     }
     
     .container {
@@ -2867,9 +2919,12 @@ header {
         font-size: 1.4rem;
     }
     
-    .about-niche {
-        width: 180px;
-        height: 220px;
+    .about-text-content {
+        padding: 15px;
+    }
+    
+    .about-signature {
+        font-size: 0.9rem;
     }
     
     .logo h2 {
@@ -2906,6 +2961,27 @@ header {
     
     .contact-info-form {
         padding: 1rem;
+    }
+}
+
+/* About Section Mobile Responsive */
+@media (max-width: 768px) {
+    .about .container {
+        padding: 0 20px;
+    }
+    
+    .about-content-layout {
+        flex-direction: row;
+        gap: 2rem;
+    }
+    
+    .about-text-content {
+        padding: 30px;
+        min-width: 250px;
+    }
+    
+    .about-image-container {
+        min-width: 250px;
     }
 }
 
@@ -2973,6 +3049,8 @@ header {
     .hero {
         height: 100vh;
         min-height: 500px;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
     
     .hero-text h1 {
@@ -3032,6 +3110,8 @@ header {
     .hero {
         /* Fix for iOS Safari viewport issues */
         min-height: -webkit-fill-available;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
     
     /* Fix for iOS Safari input zoom */

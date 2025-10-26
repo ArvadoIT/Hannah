@@ -2,7 +2,7 @@
 .bookingFlowContainer {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--spacing-xl) var(--spacing-md);
+  padding: 100px var(--spacing-md) var(--spacing-xl);
 }
 
 .bookingStepsIndicator {
@@ -552,6 +552,11 @@
 
   .bookingNavigation {
     flex-direction: column;
+  }
+
+  /* Add scroll padding for better mobile scroll positioning */
+  .timeSection {
+    scroll-margin-top: 80px;
   }
 }
 

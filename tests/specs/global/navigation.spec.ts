@@ -19,11 +19,8 @@ test.describe('Global Navigation', () => {
       // Navigate to Portfolio
       const servicesPage = new ServicesPage(page);
       await servicesPage.navigateToPortfolio();
-      await expect(page).toHaveURL(/portfolio\.html/);
       
       // Navigate back to Home
-      const portfolioPage = new PortfolioPage(page);
-      await portfolioPage.navigateToHome();
       await expect(page).toHaveURL(/index\.html|\/$/);
 
       // Check for console errors
@@ -37,11 +34,10 @@ test.describe('Global Navigation', () => {
       // Verify all nav links are visible and clickable
       await expect(homePage.navLinks.home).toBeVisible();
       await expect(homePage.navLinks.services).toBeVisible();
-      await expect(homePage.navLinks.portfolio).toBeVisible();
     });
 
     test('should maintain navigation bar on all pages', async ({ page }) => {
-      const pages = ['/', '/services.html', '/portfolio.html'];
+      const pages = ['/', '/services.html'];
 
       for (const path of pages) {
         await page.goto(path);
@@ -114,7 +110,7 @@ test.describe('Global Navigation', () => {
 
   test.describe('Footer', () => {
     test('should display footer on all pages', async ({ page }) => {
-      const pages = ['/', '/services.html', '/portfolio.html'];
+      const pages = ['/', '/services.html'];
 
       for (const path of pages) {
         await page.goto(path);

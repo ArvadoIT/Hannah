@@ -49,17 +49,6 @@ test.describe('Mobile Smoke Tests', () => {
     await page.waitForTimeout(1000);
   });
 
-  test('should view portfolio on mobile', async ({ page }) => {
-    const portfolioPage = new PortfolioPage(page);
-    await portfolioPage.goto();
-
-    // Portfolio should be visible
-    await expect(portfolioPage.portfolioGrid).toBeVisible();
-
-    // Should have items
-    const count = await portfolioPage.getVisibleItemsCount();
-    expect(count).toBeGreaterThan(0);
-  });
 
   test('should have mobile-friendly touch targets', async ({ page }) => {
     const homePage = new HomePage(page);
@@ -92,7 +81,7 @@ test.describe('Mobile Smoke Tests', () => {
   });
 
   test('should not have horizontal scroll on mobile', async ({ page }) => {
-    const pages = ['/', '/services.html', '/portfolio.html'];
+    const pages = ['/', '/services.html'];
 
     for (const path of pages) {
       await page.goto(path);
@@ -144,10 +133,6 @@ test.describe('Desktop Smoke Tests', () => {
     await homePage.navigateToServices();
     await expect(page).toHaveURL(/services\.html/);
 
-    // Navigate to portfolio
-    const servicesPage = new ServicesPage(page);
-    await servicesPage.navigateToPortfolio();
-    await expect(page).toHaveURL(/portfolio\.html/);
   });
 
   test('should complete booking flow on desktop', async ({ page }) => {

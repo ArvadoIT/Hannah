@@ -5,7 +5,6 @@ import {
 } from '../../utils/performance-assertions';
 import { HomePage } from '../../pages/HomePage';
 import { ServicesPage } from '../../pages/ServicesPage';
-import { PortfolioPage } from '../../pages/PortfolioPage';
 import { CalendarPage } from '../../pages/CalendarPage';
 
 test.describe('Console Log Monitoring - Next.js App', () => {
@@ -44,23 +43,6 @@ test.describe('Console Log Monitoring - Next.js App', () => {
     await page.waitForTimeout(1000);
     
     console.log(`Console messages on Services: ${consoleMessages.length}`);
-    
-    await expectNoConsoleErrors(consoleMessages, [
-      /favicon\.ico/,
-      /GA_MEASUREMENT_ID/,
-    ]);
-  });
-
-  test('Portfolio page should have no console errors', async ({ 
-    page, 
-    consoleMessages 
-  }) => {
-    const portfolioPage = new PortfolioPage(page);
-    await portfolioPage.goto();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-    
-    console.log(`Console messages on Portfolio: ${consoleMessages.length}`);
     
     await expectNoConsoleErrors(consoleMessages, [
       /favicon\.ico/,
@@ -207,18 +189,15 @@ test.describe('Console Log Monitoring - Next.js App', () => {
     page, 
     consoleMessages 
   }) => {
-    const portfolioPage = new PortfolioPage(page);
-    await portfolioPage.goto();
+    const servicesPage = new ServicesPage(page);
+    await servicesPage.goto();
     await page.waitForLoadState('networkidle');
     
     const initialMessageCount = consoleMessages.length;
     
-    // Interact with filters (if available)
-    const filterButtons = await portfolioPage.filterButtons.count();
-    if (filterButtons > 0) {
-      await portfolioPage.filterButtons.first().click();
-      await page.waitForTimeout(500);
-    }
+    // Interact with navigation
+    await page.click('a[href="/contact"]');
+    await page.waitForTimeout(500);
     
     // Scroll the page
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));

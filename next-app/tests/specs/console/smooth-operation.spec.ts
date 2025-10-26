@@ -1,7 +1,6 @@
 import { test, expect } from '../../fixtures/performance-monitor';
 import { HomePage } from '../../pages/HomePage';
 import { ServicesPage } from '../../pages/ServicesPage';
-import { PortfolioPage } from '../../pages/PortfolioPage';
 
 test.describe('Smooth Operation - User Experience', () => {
   test('Scrolling should be smooth without layout shifts', async ({ 

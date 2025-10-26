@@ -5,7 +5,7 @@
  * Multi-step booking with service selection, calendar, time slots, and form
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './BookingFlow.module.css';
 
 interface Service {
@@ -150,6 +150,7 @@ export default function BookingFlow() {
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState<Date[]>([]);
+  const timeSectionRef = useRef<HTMLDivElement>(null);
 
   // Generate calendar days
   useEffect(() => {
@@ -183,26 +184,52 @@ export default function BookingFlow() {
   }, [currentMonth]);
 
   const handleServiceSelect = (service: Service) => {
-    setBookingData({ ...bookingData, service });
-    setCurrentStep(2);
+    try {
+      setBookingData({ ...bookingData, service });
+      setCurrentStep(2);
+    } catch (error) {
+      console.error('Error selecting service:', error);
+    }
   };
 
   const handleDateSelect = (date: Date) => {
-    setBookingData({ ...bookingData, date });
+    try {
+      setBookingData({ ...bookingData, date });
+      
+      // Auto-scroll to time section on mobile devices (iPhone and similar)
+      if (window.innerWidth <= 768) {
+        setTimeout(() => {
+          if (timeSectionRef.current) {
+            timeSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Error selecting date:', error);
+    }
   };
 
   const handleTimeSelect = (time: string) => {
-    setBookingData({ ...bookingData, time });
+    try {
+      setBookingData({ ...bookingData, time });
+    } catch (error) {
+      console.error('Error selecting time:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // TODO: API call will be added later
-    console.log('Booking submitted:', bookingData);
-    
-    // Show success
-    setCurrentStep(4);
+    try {
+      // TODO: API call will be added later
+      console.log('Booking submitted:', bookingData);
+      
+      // Show success
+      setCurrentStep(4);
+    } catch (error) {
+      console.error('Error submitting booking:', error);
+      // You could add error state here to show an error message to the user
+    }
   };
 
   const isDateInCurrentMonth = (date: Date) => {
@@ -350,7 +377,7 @@ export default function BookingFlow() {
               </div>
             </div>
 
-            <div className={styles.timeSection}>
+            <div ref={timeSectionRef} className={styles.timeSection}>
               <h3>Choose a Time</h3>
               {bookingData.date ? (
                 <div className={styles.timeSlots}>
