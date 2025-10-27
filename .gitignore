@@ -81,7 +81,11 @@ dist
 
 # Gatsby files
 .cache/
+
+# Public - but allow image directories
 public
+!public/images/
+!public/iphoneimages/
 
 # Storybook build outputs
 .out
