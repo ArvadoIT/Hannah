@@ -1,14 +1,31 @@
 /* Services Page Styles */
 .pageHero {
   padding: 120px 0 80px;
-  background-color: var(--background-primary);
+  background-color: transparent;
   background-image: url('/images/head2.png');
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 100% 100%;
+  background-size: cover;
   text-align: center;
   position: relative;
   overflow: hidden;
+}
+
+/* Mobile background adjustments for services page */
+@media (max-width: 768px) {
+  .pageHero {
+    background-size: contain;
+    background-position: center top;
+    background-attachment: scroll;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageHero {
+    background-size: 100% auto;
+    background-position: center top;
+    background-repeat: no-repeat;
+  }
 }
 
 .pageHero::before {

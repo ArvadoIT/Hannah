@@ -10,6 +10,16 @@ import { isSmsEnabled } from '@/lib/sms';
 
 export async function GET() {
   try {
+    // Skip health check during build process
+    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
+      return NextResponse.json({
+        status: 'build-mode',
+        timestamp: new Date().toISOString(),
+        message: 'Health check skipped during build',
+        environment: process.env.NODE_ENV,
+      }, { status: 200 });
+    }
+
     // Test database connection
     const dbConnected = await testConnection();
 

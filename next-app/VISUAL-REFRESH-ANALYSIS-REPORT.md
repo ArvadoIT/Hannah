@@ -189,10 +189,9 @@ Cmd + Shift + Delete → Clear cache
 # Or use incognito/private mode
 ```
 
-### 2. **Looking at Old Static Site**
+### 2. **Wrong URL**
 **Check:** Make sure you're viewing:
 - ✅ `http://localhost:3000` (Next.js app)
-- ❌ NOT the old static-site folder
 
 ### 3. **Dev Server Not Running Latest Code**
 **Solution:**

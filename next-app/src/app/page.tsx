@@ -20,7 +20,6 @@ export default function HomePage() {
           <AnimatedElement animationType="fadeInUp" delay={200}>
             <div className={styles.heroText}>
               <h1>Lacque&latte</h1>
-              <p>Where Elegance Meets Excellence in Nail Care</p>
               <Link href="/services" className={styles.ctaButton}>
                 Book Your Appointment
               </Link>

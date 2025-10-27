@@ -1,6 +1,6 @@
 /* Contact Page Styles */
 .contactSection {
-  padding: var(--spacing-xxl) 0;
+  padding: calc(var(--spacing-xxl) + 60px) 0 var(--spacing-xxl);
   min-height: calc(100vh - 200px);
 }
 

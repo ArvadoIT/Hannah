@@ -155,7 +155,6 @@ npm run dev
 ### 3. Verify You're on Next.js App
 Make sure you're viewing:
 - ✅ `http://localhost:3000` (Next.js app with fix)
-- ❌ NOT the old `/static-site/` folder
 
 ### 4. Check Browser Extensions
 Some extensions can interfere:

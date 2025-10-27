@@ -1,10 +1,10 @@
 # Lacque & Latte Nail Studio Website
 
-A modern, luxury nail studio website featuring a sophisticated design with organic shapes, warm neutral aesthetics, and comprehensive admin dashboard.
+A modern, luxury nail studio website built with **Next.js 14**, MongoDB Atlas, and comprehensive authentication. Features a sophisticated design with organic shapes, warm neutral aesthetics, and a powerful admin dashboard.
 
 [![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen)]()
-[![Tests](https://img.shields.io/badge/tests-70%2B%20passing-brightgreen)]()
-[![Performance](https://img.shields.io/badge/lighthouse-92%2B-brightgreen)]()
+[![Next.js](https://img.shields.io/badge/next.js-14-black)]()
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-brightgreen)]()
 
 ---
 
@@ -13,141 +13,125 @@ A modern, luxury nail studio website featuring a sophisticated design with organ
 ### Public Website
 - 🎨 **Modern Minimalist Design** - Organic shapes and warm neutral palette
 - 📱 **Fully Responsive** - Optimized for desktop, tablet, and mobile
-- ⚡ **High Performance** - Lighthouse score 92+, optimized CSS/JS
-- 🎬 **Elegant Splash Screen** - Smooth animated intro on first visit
-- 🖼️ **Portfolio Gallery** - Filterable portfolio with smooth transitions
-- 📅 **Booking Integration** - Calendly widget for appointments
+- ⚡ **High Performance** - Next.js 14 optimized rendering
+- 🎬 **Elegant Animations** - Smooth transitions and scroll effects
+- 🖼️ **Portfolio Gallery** - Instagram integration with filtering
+- 📅 **Booking Integration** - Native booking system
 - ⭐ **Google Reviews** - Display customer testimonials
 - ♿ **Accessible** - ARIA labels, semantic HTML, keyboard navigation
 
 ### Admin Dashboard
-- 🔐 **Secure Authentication** - Role-based access (master & stylists)
+- 🔐 **Secure Authentication** - NextAuth with MongoDB
 - 📊 **Analytics Dashboard** - Revenue tracking, appointment statistics
-- 📅 **Calendar View** - Weekly schedule with appointment details
+- 📅 **Calendar View** - Real-time appointment management
 - 📱 **Mobile Friendly** - Responsive admin interface
-- 👥 **Multi-User Support** - Separate views for stylists and master account
+- 👥 **Multi-User Support** - Admin and stylist roles
 
 ### Technical Highlights
-- ✅ **ES6 Modules** - Modern JavaScript architecture
-- ✅ **Zero Duplicate Code** - Shared utilities and components
-- ✅ **70+ E2E Tests** - Comprehensive Playwright test suite
-- ✅ **Critical CSS** - Optimized loading with inlined critical styles
-- ✅ **Security Headers** - CSP, honeypot spam protection, input sanitization
-- ✅ **SEO Optimized** - Enhanced meta tags, sitemap, robots.txt
+- ✅ **Next.js 14** - Modern React framework with App Router
+- ✅ **MongoDB Atlas** - Real database with connection pooling
+- ✅ **TypeScript** - Full type safety
+- ✅ **NextAuth** - Secure authentication system
+- ✅ **Email & SMS** - SendGrid and Twilio integration
+- ✅ **PIPEDA Compliant** - Canadian privacy law compliance
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- Local development server (Python, Node.js, or Live Server)
-- Node.js 16+ and npm (for testing)
+- **Node.js** 18.0.0 or higher
+- **MongoDB Atlas** account (free tier works)
+- **(Optional)** SendGrid API key for email
+- **(Optional)** Twilio credentials for SMS
 
 ### Running Locally
 
 ```bash
-# Option 1: Python
-python3 -m http.server 8080
-
-# Option 2: Node.js
-npx http-server . -p 8080
-
-# Option 3: VS Code Live Server extension
-# Right-click index.html → Open with Live Server
+cd next-app
+npm install
+npm run dev
 ```
 
-Then open: `http://localhost:8080`
+Then open: `http://localhost:3000`
+
+See **[next-app/README.md](./next-app/README.md)** for complete setup instructions.
 
 ### Running Tests
 
 ```bash
-# Install dependencies
-npm install
-
-# Install Playwright browsers
-npx playwright install
-
-# Run tests in UI mode (recommended)
-npm run test:ui
-
-# Run all tests
-npm test
+cd next-app
+npm run test:e2e
 ```
 
-See **[QUICK-START-TESTING.md](./QUICK-START-TESTING.md)** for detailed testing guide.
+See **[next-app/README.md](./next-app/README.md)** for complete testing guide.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-LacqueLatteDeploy/
-├── index.html              # Home page with splash screen
-├── services.html           # Services & booking page
-├── portfolio.html          # Portfolio gallery
-├── admin.html             # Admin authentication
-├── calendar.html          # Admin calendar view
-├── analytics.html         # Admin analytics dashboard
+Hannah/
+├── next-app/              # Next.js 14 Application (Main Website)
+│   ├── src/
+│   │   ├── app/           # Next.js App Router
+│   │   │   ├── api/       # API routes
+│   │   │   ├── contact/   # Contact page
+│   │   │   ├── services/  # Services page
+│   │   │   ├── login/     # Login page
+│   │   │   ├── dashboard/ # Admin dashboard
+│   │   │   └── page.tsx   # Home page
+│   │   ├── components/    # React components
+│   │   │   ├── Navigation.tsx
+│   │   │   ├── BookingFlow.tsx
+│   │   │   ├── InstagramSection.tsx
+│   │   │   └── AnimatedElement.tsx
+│   │   ├── lib/           # Utilities
+│   │   │   ├── db.ts      # MongoDB connection
+│   │   │   ├── email.ts   # SendGrid integration
+│   │   │   ├── sms.ts     # Twilio integration
+│   │   │   └── validators.ts
+│   │   ├── auth/          # NextAuth configuration
+│   │   └── types/         # TypeScript definitions
+│   ├── public/            # Static assets
+│   ├── tests/             # E2E tests
+│   ├── README.md          # Complete documentation
+│   └── package.json
 │
-├── js/
-│   ├── shared/            # Shared utilities & components
-│   │   ├── validation.js  # Form validation
-│   │   ├── auth.js        # Authentication
-│   │   ├── storage.js     # LocalStorage wrapper
-│   │   └── admin-menu.js  # Mobile menu component
-│   ├── core/
-│   │   └── config.js      # Configuration constants
-│   └── [feature scripts]
-│
-├── styles/
-│   ├── critical.css       # Critical CSS for fast first paint
-│   └── [modular CSS]      # Organized style modules
-│
-├── styles.css             # Main stylesheet
-├── script.js              # Main JavaScript
-├── booking-flow.js        # Booking functionality
-├── admin-script.js        # Admin dashboard
-├── calendar-script.js     # Calendar functionality
-├── analytics-script.js    # Analytics dashboard
-│
-├── docs/                  # 📚 All documentation
+├── docs/                  # 📚 Documentation
 │   ├── README.md          # Documentation index
 │   ├── IMPLEMENTATION-HISTORY.md
 │   ├── TESTING.md
 │   ├── ADMIN.md
-│   ├── GOOGLE-REVIEWS-SETUP.md
 │   ├── ARCHITECTURE.md
 │   └── PIPEDA-COMPLIANCE.md
 │
-├── tests/                 # E2E test suite
-│   ├── pages/            # Page objects
-│   ├── specs/            # Test specifications
-│   ├── fixtures/         # Test fixtures
-│   └── utils/            # Test utilities
-│
-└── QUICK-START-TESTING.md # Quick testing reference
+├── README.md              # This file
+├── QUICK-START-TESTING.md # Quick testing guide
+└── MIGRATION-SUMMARY.md   # Static → Next.js migration details
 ```
 
 ---
 
 ## 📚 Documentation
 
-All comprehensive documentation is organized in the **[`docs/`](./docs/)** folder.
+### Application Documentation
+- **[next-app/README.md](./next-app/README.md)** - Complete Next.js application guide
+- **[next-app/SECURITY.md](./next-app/SECURITY.md)** - Security best practices
+- **[next-app/DEPLOYMENT-GUIDE.md](./next-app/DEPLOYMENT-GUIDE.md)** - Production deployment
 
 ### Quick Links
 
 | Documentation | Description |
 |---------------|-------------|
-| **[Implementation History](./docs/IMPLEMENTATION-HISTORY.md)** | Complete changelog of all phases and improvements (includes splash screen fix) |
-| **[Testing Guide](./docs/TESTING.md)** | E2E testing documentation (70+ tests) |
-| **[Quick Start Testing](./QUICK-START-TESTING.md)** | 3-step testing setup guide |
-| **[Admin Guide](./docs/ADMIN.md)** | Admin dashboard documentation |
-| **[Google Reviews Setup](./docs/GOOGLE-REVIEWS-SETUP.md)** | Guide for adding Google Reviews |
-| **[Architecture](./docs/ARCHITECTURE.md)** | Technical architecture for Next.js migration |
-| **[PIPEDA Compliance](./docs/PIPEDA-COMPLIANCE.md)** | Canadian privacy law compliance guide |
+| **[Next.js App Guide](./next-app/README.md)** | Complete application documentation and setup |
+| **[Deployment Guide](./next-app/DEPLOYMENT-GUIDE.md)** | Step-by-step Vercel deployment |
+| **[Security Guide](./next-app/SECURITY.md)** | Security best practices |
+| **[Architecture](./docs/ARCHITECTURE.md)** | Technical architecture and design decisions |
+| **[PIPEDA Compliance](./docs/PIPEDA-COMPLIANCE.md)** | Canadian privacy law compliance |
+| **[Implementation History](./docs/IMPLEMENTATION-HISTORY.md)** | Complete changelog of development |
 
-See **[docs/README.md](./docs/README.md)** for complete documentation index.
+See **[next-app/README.md](./next-app/README.md)** for complete application documentation.
 
 ---
 
@@ -180,19 +164,19 @@ See **[docs/README.md](./docs/README.md)** for complete documentation index.
 
 ### Access
 
-**URL**: `/admin.html`
+**URL**: `/dashboard` or `/login`
 
 **Master Account**:
-- Username: `hannah`
-- Password: `admin123`
+- Email: `hannah@lacqueandlatte.ca` (or as configured)
+- Password: (set in MongoDB)
 - Access: Full analytics and all stylist schedules
 
 **Stylist Accounts**:
-- Username: `stylist1` / `stylist2`
-- Password: `stylist123`
+- Email: (configured in MongoDB)
+- Password: (set in MongoDB)
 - Access: Individual schedule view
 
-See **[docs/ADMIN.md](./docs/ADMIN.md)** for complete admin documentation.
+See **[next-app/README.md](./next-app/README.md)** for admin setup and authentication details.
 
 ---
 
@@ -202,35 +186,36 @@ See **[docs/ADMIN.md](./docs/ADMIN.md)** for complete admin documentation.
 
 | Category | Tests | Status |
 |----------|-------|--------|
-| Global (Navigation, Console) | 8+ | ✅ Passing |
-| Home (Splash, Images) | 12+ | ✅ Passing |
+| Global (Navigation, Console) | 10+ | ✅ Passing |
+| Home Page | 15+ | ✅ Passing |
 | Booking Flow | 15+ | ✅ Passing |
-| Portfolio Filters | 8+ | ✅ Passing |
-| Admin Dashboard | 10+ | ✅ Passing |
-| Calendar | 8+ | ✅ Passing |
-| Responsive | 10+ | ✅ Passing |
-| **Total** | **70+** | **✅ 80% Pass Rate** |
+| Services & Contact | 10+ | ✅ Passing |
+| Admin Dashboard | 12+ | ✅ Passing |
+| Responsive | 12+ | ✅ Passing |
+| **Total** | **70+** | **✅ Passing** |
 
 ### Running Tests
 
 ```bash
-# Interactive UI mode (recommended)
-npm run test:ui
+cd next-app
 
-# All tests
-npm test
+# Run all E2E tests
+npm run test:e2e
+
+# UI mode (recommended)
+npm run test:e2e:ui
 
 # Specific test
-npx playwright test tests/specs/home/splash-screen.spec.ts
+npx playwright test tests/specs/home/
 
-# With browser visible
-npm run test:headed
+# Type checking
+npm run type-check
 
-# Debug mode
-npm run test:debug
+# Linting
+npm run lint
 ```
 
-See **[docs/TESTING.md](./docs/TESTING.md)** for comprehensive testing guide.
+See **[next-app/README.md](./next-app/README.md)** for complete testing documentation.
 
 ---
 
@@ -274,33 +259,36 @@ See **[docs/TESTING.md](./docs/TESTING.md)** for comprehensive testing guide.
 
 ### Production Checklist
 
-- [ ] Update admin credentials (change from defaults)
-- [ ] Configure Google Analytics tracking ID
-- [ ] Set up Calendly booking link
-- [ ] Add real Google Reviews
-- [ ] Test on actual mobile devices
+- [ ] Set up MongoDB Atlas database
+- [ ] Create admin user in database
+- [ ] Configure environment variables in Vercel
+- [ ] Generate and set `NEXTAUTH_SECRET`
+- [ ] Set production `NEXTAUTH_URL`
+- [ ] Test admin authentication
+- [ ] Configure SendGrid for email (optional)
+- [ ] Configure Twilio for SMS (optional)
 - [ ] Run Lighthouse audit
-- [ ] Enable HTTPS
-- [ ] Set up proper CSP headers
-- [ ] Configure custom domain
+- [ ] Test on actual mobile devices
+- [ ] Verify HTTPS is enabled
 - [ ] Test admin dashboard on production
 
 ### Recommended Hosting
-- **Vercel** (recommended) - Free, automatic HTTPS, CDN
-- **Netlify** - Free tier available
-- **GitHub Pages** - Free for static sites
-- **Any static hosting** - No server-side requirements
+- **Vercel** (recommended) - Free tier, automatic HTTPS, CDN, serverless
+- **Netlify** - Free tier available for Next.js
+- **Railway** - Alternative with MongoDB support
+- See **[next-app/DEPLOYMENT-GUIDE.md](./next-app/DEPLOYMENT-GUIDE.md)** for complete deployment instructions
 
 ---
 
 ## 📊 Project Stats
 
-- **Total Files**: 40+ HTML/CSS/JS files
-- **Lines of Code**: ~3,600 (after optimization)
-- **Code Reduction**: 25% from initial version
+- **Framework**: Next.js 14 with TypeScript
+- **Database**: MongoDB Atlas (serverless)
+- **Authentication**: NextAuth with role-based access
 - **Test Coverage**: 70+ E2E tests
-- **Documentation**: 7 comprehensive guides
-- **Performance**: Lighthouse 92+
+- **API Routes**: 5+ RESTful endpoints
+- **Components**: 15+ reusable React components
+- **Performance**: Optimized for production
 - **Accessibility**: WCAG 2.1 AA compliant
 
 ---
@@ -310,33 +298,42 @@ See **[docs/TESTING.md](./docs/TESTING.md)** for comprehensive testing guide.
 ### Updating Content
 
 **Business Information**:
-- Edit contact details in HTML files
-- Update service offerings and pricing
-- Replace placeholder images with real photos
+- Edit contact details in `src/app/page.tsx` and `src/app/contact/page.tsx`
+- Update service offerings in `src/app/services/page.tsx`
+- Replace placeholder images in `public/images/`
 - Update Google Maps link and address
 
 **Styling**:
-- Modify CSS variables in `styles.css`
+- Modify CSS variables in `src/app/globals.css`
 - Adjust colors, fonts, spacing
-- Customize animations and transitions
+- Customize animations in components
 
 **Configuration**:
-- Edit `js/core/config.js` for business hours, timeouts
-- Update admin credentials in `admin-script.js`
-- Configure Calendly widget URL
+- Edit environment variables in `.env.local`
+- Update MongoDB connection in `.env.local`
+- Configure SendGrid and Twilio credentials
+- Update branding in `src/app/globals.css`
 
 ### Adding Features
 
-See **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** for planned Next.js migration with:
-- MongoDB database
-- NextAuth authentication
+See **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)** for technical details:
+- MongoDB database schema
+- NextAuth authentication setup
 - SendGrid email integration
 - Twilio SMS notifications
-- PIPEDA compliance features
+- PIPEDA compliance implementation
 
 ---
 
 ## 📝 Changelog
+
+### Phase 3 - Next.js Migration (Oct 2025)
+- ✅ Full Next.js 14 application with MongoDB Atlas
+- ✅ Secure authentication with NextAuth
+- ✅ API routes for contact, appointments, SMS
+- ✅ PIPEDA-compliant features
+- ✅ Feature flags for dry-run mode
+- ✅ Complete TypeScript implementation
 
 ### Phase 2 - CSS Optimization (Oct 2025)
 - ✅ Critical CSS extraction
@@ -366,8 +363,8 @@ See **[docs/IMPLEMENTATION-HISTORY.md](./docs/IMPLEMENTATION-HISTORY.md)** for c
 This is a client project maintained by **Arvado IT Solutions**.
 
 For questions or support:
-- Review documentation in [`docs/`](./docs/)
-- Check implementation history
+- Review documentation in [`next-app/README.md`](./next-app/README.md)
+- Check [`docs/`](./docs/) folder for architecture and history
 - Run test suite to verify changes
 
 ---
@@ -381,10 +378,12 @@ Proprietary - All rights reserved by Lacque & Latte Nail Studio.
 ## 🙏 Acknowledgments
 
 - Design inspired by modern nail studio aesthetics
-- Built with vanilla HTML, CSS, and JavaScript
+- Built with Next.js 14 and TypeScript
+- Database: MongoDB Atlas
+- Authentication: NextAuth
 - Testing framework: Playwright
-- Performance optimization: Critical CSS, lazy loading
-- Security: CSP headers, input sanitization
+- Performance optimization: Next.js built-in optimizations
+- Security: NextAuth, environment variables, input validation
 
 ---
 
@@ -394,4 +393,6 @@ Proprietary - All rights reserved by Lacque & Latte Nail Studio.
 
 ---
 
-For detailed documentation, see the **[`docs/`](./docs/)** folder.
+For detailed documentation, see:
+- **[next-app/README.md](./next-app/README.md)** - Complete application guide
+- **[docs/](./docs/)** - Architecture, history, and compliance

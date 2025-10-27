@@ -4,11 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--background-primary);
-  background-image: url('/images/DOWNroundflower.png');
-  background-repeat: no-repeat;
-  background-position: center top;
-  background-size: cover;
+  background-color: transparent;
   position: relative;
   overflow: hidden;
   padding: 0;
@@ -28,12 +24,17 @@
 
 .heroText h1 {
   font-family: var(--font-accent);
-  font-size: clamp(3rem, 8vw, 5rem);
-  font-weight: 400;
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-md);
+  font-size: clamp(4rem, 10vw, 7.5rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b7355 0%, #a68a74 50%, #8b7355 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 20px rgba(139, 115, 85, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin-bottom: 8rem;
   letter-spacing: -0.02em;
   animation: fadeInUp 0.8s ease;
+  filter: contrast(1.1);
 }
 
 .heroText p {
@@ -69,6 +70,7 @@
   position: relative;
   overflow: hidden;
   animation: fadeInUp 0.8s ease 0.4s both;
+  z-index: 1;
 }
 
 .ctaButton::before {
@@ -80,6 +82,7 @@
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
+  z-index: 0;
 }
 
 .ctaButton:hover::before {
@@ -88,13 +91,14 @@
 
 .ctaButton:hover {
   background: var(--primary-dark);
+  color: var(--white);
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(139, 115, 85, 0.4);
 }
 
 .services {
   padding: 100px 0;
-  background: var(--background-primary);
+  background: transparent;
 }
 
 .sectionTitle {
@@ -194,12 +198,7 @@
 
 .aboutSection {
   padding: 100px 0;
-  background-color: var(--background-primary);
-  background-image: url('/images/roundflower.png');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 150% 150%;
-  background-attachment: fixed;
+  background-color: transparent;
   position: relative;
 }
 
@@ -357,12 +356,7 @@
 
 .galleryPreview {
   padding: 100px 0;
-  background-color: var(--background-secondary);
-  background-image: url('/images/DOWNroundflower.png');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 150% 150%;
-  background-attachment: fixed;
+  background-color: transparent;
   position: relative;
 }
 
@@ -429,7 +423,8 @@
 }
 
 .ctaSection .ctaButton:hover {
-  background: var(--background-primary);
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
   transform: translateY(-3px);
 }
 
@@ -437,14 +432,28 @@
   .hero {
     padding: 0 !important;
     margin-top: 0 !important;
-    background-size: 200% auto;
-    background-attachment: scroll;
-    background-position: center center;
+    min-height: 100vh;
+    height: 100vh;
+    background-size: cover !important;
+    background-attachment: scroll !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    overflow: hidden;
+  }
+
+  .heroText h1 {
+    font-size: clamp(4.5rem, 12vw, 8rem);
   }
 
   .aboutSection {
-    background-size: 200% auto;
-    background-attachment: scroll;
+    background-size: contain;
+    background-attachment: scroll !important;
+    background-position: center center;
+  }
+
+  .galleryPreview {
+    background-size: contain;
+    background-attachment: scroll !important;
     background-position: center center;
   }
 
@@ -467,7 +476,7 @@
   }
 
   .galleryPreview {
-    background-size: 200% auto;
+    background-size: contain;
     background-attachment: scroll;
     background-position: center center;
   }
@@ -517,20 +526,37 @@
   .galleryGridPreview {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* Ensure no white space below hero on mobile */
+  .hero {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .aboutSection {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
 }
 
 /* iPhone specific optimizations */
 @media (max-width: 414px) {
   .hero {
-    background-size: 250% auto;
-    background-position: center center;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
     min-height: 100vh;
     min-height: -webkit-fill-available;
+    height: 100vh;
+    height: -webkit-fill-available;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
   }
 
   .aboutSection,
   .galleryPreview {
-    background-size: 250% auto;
+    background-size: contain;
     background-position: center center;
   }
 }
@@ -539,14 +565,20 @@
 @supports (-webkit-touch-callout: none) {
   .hero {
     min-height: -webkit-fill-available;
-    background-size: 250% auto;
-    background-attachment: scroll;
-    background-position: center center;
+    height: -webkit-fill-available;
+    background-size: cover !important;
+    background-attachment: scroll !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
   }
 
   .aboutSection,
   .galleryPreview {
-    background-size: 250% auto;
+    background-size: contain;
+    background-attachment: scroll !important;
     background-position: center center;
   }
 

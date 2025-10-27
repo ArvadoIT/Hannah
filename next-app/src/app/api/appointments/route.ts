@@ -77,8 +77,9 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('Get appointments error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to retrieve appointments' },
+      { error: 'Failed to retrieve appointments', details: errorMessage },
       { status: 500 }
     );
   }

@@ -88,11 +88,6 @@ export default function ContactPage() {
     <main>
       <section className={styles.contactSection}>
         <div className="container">
-          <h1>Contact Us</h1>
-          <p className={styles.subtitle}>
-            Have a question or ready to book? We'd love to hear from you!
-          </p>
-
           <div className={styles.contactContent}>
             <div className={styles.contactInfo}>
               <h2>Get in Touch</h2>

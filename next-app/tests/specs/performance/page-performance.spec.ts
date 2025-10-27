@@ -8,7 +8,6 @@ import {
 } from '../../utils/performance-assertions';
 import { HomePage } from '../../pages/HomePage';
 import { ServicesPage } from '../../pages/ServicesPage';
-import { PortfolioPage } from '../../pages/PortfolioPage';
 import { CalendarPage } from '../../pages/CalendarPage';
 
 test.describe('Page Performance - Next.js App', () => {
@@ -66,45 +65,6 @@ test.describe('Page Performance - Next.js App', () => {
     expect(await servicesPage.areServicesLoaded()).toBe(true);
   });
 
-  test('Portfolio page should load images efficiently', async ({ 
-    page, 
-    consoleMessages, 
-    networkRequests,
-    capturePerformance 
-  }) => {
-    const portfolioPage = new PortfolioPage(page);
-    
-    await portfolioPage.goto();
-    await page.waitForLoadState('networkidle');
-    
-    // Give images time to load
-    await page.waitForTimeout(2000);
-    
-    const metrics = await capturePerformance();
-    console.log(generatePerformanceReport(metrics, consoleMessages, networkRequests));
-    
-    // Portfolio may have more images, so allow slightly larger size
-    await expectGoodPerformance(metrics, {
-      maxImageSize: 2 * 1024 * 1024, // 2MB for all images
-    });
-    
-    await expectNoFailedRequests(networkRequests, [/favicon\.ico/]);
-    
-    // Check that images are optimized (Next.js Image component)
-    const imageRequests = networkRequests.filter(req => 
-      req.url.includes('/_next/image') || 
-      req.type === 'image' ||
-      /\.(jpg|jpeg|png|webp|gif)$/i.test(req.url)
-    );
-    
-    console.log(`Total image requests: ${imageRequests.length}`);
-    
-    // Images should use Next.js image optimization
-    const optimizedImages = networkRequests.filter(req => 
-      req.url.includes('/_next/image')
-    );
-    console.log(`Optimized images: ${optimizedImages.length}`);
-  });
 
   test('Calendar page should be interactive quickly', async ({ 
     page, 
@@ -146,19 +106,19 @@ test.describe('Page Performance - Next.js App', () => {
     await homePage.navigateToServices();
     const servicesTransitionTime = Date.now() - transitionStart;
     
-    // Navigate to portfolio
-    const portfolioTransitionStart = Date.now();
+    // Navigate to calendar
+    const calendarTransitionStart = Date.now();
     const servicesPage = new ServicesPage(page);
-    await page.click('a[href*="/portfolio"]');
+    await page.click('a[href*="/calendar"]');
     await page.waitForLoadState('networkidle');
-    const portfolioTransitionTime = Date.now() - portfolioTransitionStart;
+    const calendarTransitionTime = Date.now() - calendarTransitionStart;
     
     console.log(`Services transition: ${servicesTransitionTime}ms`);
-    console.log(`Portfolio transition: ${portfolioTransitionTime}ms`);
+    console.log(`Calendar transition: ${calendarTransitionTime}ms`);
     
     // Next.js page transitions should be fast (client-side navigation)
     expect(servicesTransitionTime, 'Services page transition should be under 1 second').toBeLessThan(1000);
-    expect(portfolioTransitionTime, 'Portfolio page transition should be under 1 second').toBeLessThan(1000);
+    expect(calendarTransitionTime, 'Calendar page transition should be under 1 second').toBeLessThan(1000);
     
     const metrics = await capturePerformance();
     console.log(generatePerformanceReport(metrics, consoleMessages, networkRequests));
@@ -171,7 +131,6 @@ test.describe('Page Performance - Next.js App', () => {
     const pages = [
       new HomePage(page),
       new ServicesPage(page),
-      new PortfolioPage(page),
       new CalendarPage(page),
     ];
     

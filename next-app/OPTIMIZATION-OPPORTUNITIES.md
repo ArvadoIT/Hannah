@@ -200,8 +200,8 @@ export const metadata: Metadata = {
 
 ### 9. **Add robots.txt and sitemap.xml**
 
-Already have these in static-site, but should add to Next.js app:
-- `app/robots.txt` (or robots.ts for dynamic)
+Should add to Next.js app:
+- `app/robots.ts` (dynamic robots.txt generation)
 - `app/sitemap.ts` (for dynamic sitemap generation)
 
 ### 10. **Compression**

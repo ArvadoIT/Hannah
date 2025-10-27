@@ -1,49 +1,13 @@
 'use client';
 
 /**
- * Admin Dashboard Page
- * Interface for managing appointments and viewing analytics
+ * Admin Dashboard Page - Premium Design
+ * Modern, minimal admin interface with solid colors and smooth animations
  */
 
 import { useState, useEffect } from 'react';
-import styles from './page.module.css';
-import dynamic from 'next/dynamic';
-
-// Dynamically import Chart.js components to avoid SSR issues
-const Line = dynamic(() => import('react-chartjs-2').then(mod => mod.Line), { ssr: false });
-const Bar = dynamic(() => import('react-chartjs-2').then(mod => mod.Bar), { ssr: false });
-const Doughnut = dynamic(() => import('react-chartjs-2').then(mod => mod.Doughnut), { ssr: false });
-
-// Import Chart.js components
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
-
-// Register Chart.js components
-if (typeof window !== 'undefined') {
-  ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    BarElement,
-    ArcElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler
-  );
-}
+import { motion, AnimatePresence } from 'framer-motion';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface Appointment {
   _id: string;
@@ -60,18 +24,18 @@ interface Appointment {
 }
 
 type ViewTab = 'dashboard' | 'analytics';
-type TimePeriod = 'week' | 'month' | 'quarter' | 'year';
+type DatePreset = 'today' | 'week' | 'month' | 'all';
 
 export default function AdminPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('');
+  const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [activeView, setActiveView] = useState<ViewTab>('dashboard');
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('month');
 
   // Fetch appointments
   useEffect(() => {
@@ -87,56 +51,55 @@ export default function AdminPage() {
       filtered = filtered.filter(apt => apt.status === statusFilter);
     }
 
-    // Date filter
+    // Apply date preset
+    const now = new Date();
+    let filteredByPreset = filtered;
+    
+    if (datePreset === 'today') {
+      const today = new Date(now);
+      today.setHours(0, 0, 0, 0);
+      filteredByPreset = filtered.filter(apt => {
+        const aptDate = new Date(apt.startTime);
+        aptDate.setHours(0, 0, 0, 0);
+        return aptDate.getTime() === today.getTime();
+      });
+    } else if (datePreset === 'week') {
+      const weekAgo = new Date(now);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      filteredByPreset = filtered.filter(apt => new Date(apt.startTime) >= weekAgo);
+    } else if (datePreset === 'month') {
+      const monthAgo = new Date(now);
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      filteredByPreset = filtered.filter(apt => new Date(apt.startTime) >= monthAgo);
+    }
+
+    // Date filter (manual date picker)
     if (dateFilter) {
-      filtered = filtered.filter(apt => {
+      filteredByPreset = filteredByPreset.filter(apt => {
         const aptDate = new Date(apt.startTime).toISOString().split('T')[0];
         return aptDate === dateFilter;
       });
     }
 
     // Sort by date (upcoming first)
-    filtered.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    filteredByPreset.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-    setFilteredAppointments(filtered);
-  }, [appointments, statusFilter, dateFilter]);
+    setFilteredAppointments(filteredByPreset);
+  }, [appointments, statusFilter, dateFilter, datePreset]);
 
   // Handle Escape key to close modal
   useEffect(() => {
-    // Safety check for browser environment
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
     const handleEscape = (e: KeyboardEvent) => {
-      try {
-        if (e.key === 'Escape' && selectedAppointment) {
-          setSelectedAppointment(null);
-        }
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('AdminPage: Error handling escape key:', error);
-        }
+      if (e.key === 'Escape' && selectedAppointment) {
+        setSelectedAppointment(null);
       }
     };
 
     if (selectedAppointment) {
-      try {
-        document.addEventListener('keydown', handleEscape);
-        return () => {
-          try {
-            document.removeEventListener('keydown', handleEscape);
-          } catch (error) {
-            if (process.env.NODE_ENV === 'development') {
-              console.warn('AdminPage: Error removing escape listener:', error);
-            }
-          }
-        };
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('AdminPage: Error adding escape listener:', error);
-        }
-      }
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
     }
   }, [selectedAppointment]);
 
@@ -151,13 +114,19 @@ export default function AdminPage() {
 
       const data = await response.json();
       setAppointments(data.appointments || []);
-      setError('');
     } catch (err) {
-      setError('Unable to load appointments. Please try again.');
+      toast.error('Unable to load appointments. Please try again.');
       console.error('Error fetching appointments:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchAppointments();
+    setTimeout(() => setIsRefreshing(false), 500);
+    toast.success('Appointments refreshed');
   };
 
   const updateAppointmentStatus = async (id: string, newStatus: string) => {
@@ -172,11 +141,11 @@ export default function AdminPage() {
         throw new Error('Failed to update appointment');
       }
 
-      // Refresh appointments
       await fetchAppointments();
       setSelectedAppointment(null);
+      toast.success('Appointment status updated successfully');
     } catch (err) {
-      alert('Failed to update appointment status');
+      toast.error('Failed to update appointment status');
       console.error('Error updating appointment:', err);
     }
   };
@@ -197,8 +166,9 @@ export default function AdminPage() {
 
       await fetchAppointments();
       setSelectedAppointment(null);
+      toast.success('Appointment cancelled successfully');
     } catch (err) {
-      alert('Failed to cancel appointment');
+      toast.error('Failed to cancel appointment');
       console.error('Error deleting appointment:', err);
     }
   };
@@ -243,774 +213,491 @@ export default function AdminPage() {
     }
   };
 
-  // Analytics calculations
-  const calculateAnalytics = () => {
-    const now = new Date();
-    const periodStart = getPeriodStart(now, timePeriod);
-    
-    const periodAppointments = appointments.filter(apt => {
-      const aptDate = new Date(apt.startTime);
-      return aptDate >= periodStart && aptDate <= now;
-    });
 
-    // Mock revenue calculation ($85 average per appointment)
-    const revenue = periodAppointments.filter(a => a.status === 'completed').length * 85;
-    const activeClients = new Set(periodAppointments.map(a => a.clientEmail)).size;
-    const conversionRate = Math.round((periodAppointments.filter(a => a.status === 'confirmed' || a.status === 'completed').length / Math.max(periodAppointments.length, 1)) * 100);
-    const retentionRate = 85; // Mock data
-
-    return {
-      revenue,
-      appointments: periodAppointments.length,
-      activeClients,
-      avgRating: 4.9,
-      conversionRate,
-      retentionRate,
-      revenueChange: 12,
-      appointmentsChange: 8,
-      clientsChange: 15,
-      ratingChange: 2,
-      conversionChange: 5,
-      retentionChange: 3
-    };
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
-
-  const getPeriodStart = (date: Date, period: TimePeriod): Date => {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-
-    switch (period) {
-      case 'week':
-        start.setDate(date.getDate() - 7);
-        break;
-      case 'month':
-        start.setMonth(date.getMonth() - 1);
-        break;
-      case 'quarter':
-        start.setMonth(date.getMonth() - 3);
-        break;
-      case 'year':
-        start.setFullYear(date.getFullYear() - 1);
-        break;
-    }
-    return start;
-  };
-
-  const getRevenueChartData = () => {
-    const labels = timePeriod === 'week' 
-      ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-      : timePeriod === 'month'
-      ? ['Week 1', 'Week 2', 'Week 3', 'Week 4']
-      : ['Q1', 'Q2', 'Q3', 'Q4'];
-
-    return {
-      labels,
-      datasets: [{
-        label: 'Revenue ($)',
-        data: timePeriod === 'week' ? [420, 380, 520, 480, 650, 720, 680] : [1850, 2100, 2400, 2250],
-        borderColor: '#8b5cf6',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        borderWidth: 3,
-        fill: true,
-        tension: 0.4
-      }]
-    };
-  };
-
-  const getDistributionChartData = () => {
-    const confirmed = appointments.filter(a => a.status === 'confirmed').length;
-    const pending = appointments.filter(a => a.status === 'pending').length;
-    const completed = appointments.filter(a => a.status === 'completed').length;
-
-    return {
-      labels: ['Confirmed', 'Pending', 'Completed'],
-      datasets: [{
-        data: [confirmed, pending, completed],
-        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
-        borderWidth: 0
-      }]
-    };
-  };
-
-  const getServicesChartData = () => {
-    const serviceCounts: { [key: string]: number } = {};
-    appointments.forEach(apt => {
-      serviceCounts[apt.service] = (serviceCounts[apt.service] || 0) + 1;
-    });
-
-    const sortedServices = Object.entries(serviceCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-
-    return {
-      labels: sortedServices.map(([service]) => service),
-      datasets: [{
-        label: 'Bookings',
-        data: sortedServices.map(([, count]) => count),
-        backgroundColor: '#8b5cf6',
-        borderRadius: 8
-      }]
-    };
-  };
-
-  const getTopServices = () => {
-    const serviceCounts: { [key: string]: number } = {};
-    appointments.forEach(apt => {
-      serviceCounts[apt.service] = (serviceCounts[apt.service] || 0) + 1;
-    });
-
-    return Object.entries(serviceCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([service, bookings]) => ({
-        name: service,
-        bookings,
-        revenue: bookings * 85,
-        duration: '90 min',
-        rating: 4.9
-      }));
-  };
-
-  const getTopClients = () => {
-    const clientData: { [email: string]: { name: string; visits: number; lastVisit: Date } } = {};
-    
-    appointments.forEach(apt => {
-      if (!clientData[apt.clientEmail]) {
-        clientData[apt.clientEmail] = {
-          name: apt.clientName,
-          visits: 0,
-          lastVisit: new Date(apt.startTime)
-        };
-      }
-      clientData[apt.clientEmail].visits++;
-      const aptDate = new Date(apt.startTime);
-      if (aptDate > clientData[apt.clientEmail].lastVisit) {
-        clientData[apt.clientEmail].lastVisit = aptDate;
-      }
-    });
-
-    return Object.entries(clientData)
-      .sort((a, b) => b[1].visits - a[1].visits)
-      .slice(0, 5)
-      .map(([_email, data]) => {
-        const daysSinceVisit = Math.floor((Date.now() - data.lastVisit.getTime()) / (1000 * 60 * 60 * 24));
-        const lastVisitText = daysSinceVisit === 0 ? 'Today' : daysSinceVisit === 1 ? '1 day ago' : `${daysSinceVisit} days ago`;
-        return {
-          name: data.name,
-          visits: data.visits,
-          lastVisit: lastVisitText,
-          totalSpent: data.visits * 85,
-          status: daysSinceVisit < 30 ? 'Active' : 'Inactive'
-        };
-      });
-  };
-
-  const getStylistPerformance = () => {
-    const stylists = ['Hannah', 'Sarah', 'Emma'];
-    return stylists.map(name => {
-      const stylistAppointments = appointments.filter(a => a.stylist === name);
-      return {
-        name,
-        metrics: {
-          revenue: stylistAppointments.filter(a => a.status === 'completed').length * 85,
-          appointments: stylistAppointments.length,
-          rating: 4.9,
-          satisfaction: 96
-        }
-      };
-    }).filter(s => s.metrics.appointments > 0);
-  };
-
-  const getBusinessInsights = () => {
-    const analytics = calculateAnalytics();
-    return [
-      {
-        type: 'positive',
-        icon: '📈',
-        title: 'Revenue Growth',
-        description: `Revenue has increased by ${analytics.revenueChange}% compared to last ${timePeriod}, driven by increased bookings for premium services.`
-      },
-      {
-        type: 'positive',
-        icon: '⭐',
-        title: 'High Customer Satisfaction',
-        description: `Average rating of ${analytics.avgRating} stars with 95% of clients rating their experience as excellent.`
-      },
-      {
-        type: 'neutral',
-        icon: '📅',
-        title: 'Peak Booking Times',
-        description: 'Most popular booking times are Friday afternoons and Saturday mornings. Consider extending hours.'
-      },
-      {
-        type: 'positive',
-        icon: '🔄',
-        title: 'Strong Retention',
-        description: `${analytics.retentionRate}% client retention rate indicates excellent service quality and customer loyalty.`
-      }
-    ];
-  };
-
-  const analytics = calculateAnalytics();
-  const formatCurrency = (amount: number) => `$${amount.toLocaleString()}`;
 
   return (
-    <div className={styles.adminContainer}>
-      <header className={styles.adminHeader}>
-        <h1>Admin Dashboard</h1>
-        <div className={styles.headerActions}>
-          <div className={styles.viewTabs}>
-            <button 
-              className={`${styles.viewTab} ${activeView === 'dashboard' ? styles.activeTab : ''}`}
-              onClick={() => setActiveView('dashboard')}
-            >
-              📋 Dashboard
-            </button>
-            <button 
-              className={`${styles.viewTab} ${activeView === 'analytics' ? styles.activeTab : ''}`}
-              onClick={() => setActiveView('analytics')}
-            >
-              📊 Analytics
-            </button>
-          </div>
-          <button onClick={fetchAppointments} className={styles.refreshBtn}>
-            ↻ Refresh
-          </button>
-        </div>
-      </header>
-
-      {/* Dashboard View */}
-      {activeView === 'dashboard' && (
-        <div className={styles.dashboardView}>
-          {/* Stats Cards */}
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <div className={styles.statValue}>{stats.total}</div>
-          <div className={styles.statLabel}>Total Appointments</div>
-        </div>
-        <div className={`${styles.statCard} ${styles.highlight}`}>
-          <div className={styles.statValue}>{stats.today}</div>
-          <div className={styles.statLabel}>Today</div>
-        </div>
-        <div className={styles.statCard} style={{ borderLeftColor: '#f59e0b' }}>
-          <div className={styles.statValue}>{stats.pending}</div>
-          <div className={styles.statLabel}>Pending</div>
-        </div>
-        <div className={styles.statCard} style={{ borderLeftColor: '#3b82f6' }}>
-          <div className={styles.statValue}>{stats.confirmed}</div>
-          <div className={styles.statLabel}>Confirmed</div>
-        </div>
-        <div className={styles.statCard} style={{ borderLeftColor: '#10b981' }}>
-          <div className={styles.statValue}>{stats.completed}</div>
-          <div className={styles.statLabel}>Completed</div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className={styles.filters}>
-        <div className={styles.filterGroup}>
-          <label htmlFor="status-filter">Status:</label>
-          <select
-            id="status-filter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+    <div className="min-h-screen bg-[#f8f5f2]">
+      <Toaster position="top-right" />
+      
+      {/* Main Container */}
+      <div className="max-w-[1400px] mx-auto px-6 py-28 space-y-10">
+        
+        {/* Header */}
+        <motion.header 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
+        >
+          <h1 
+            className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#b28c66] to-[#7e6854]"
+            style={{ fontFamily: 'var(--font-display)' }}
           >
-            <option value="all">All</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-        <div className={styles.filterGroup}>
-          <label htmlFor="date-filter">Date:</label>
-          <input
-            type="date"
-            id="date-filter"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-          />
-          {dateFilter && (
-            <button onClick={() => setDateFilter('')} className={styles.clearFilter}>
-              Clear
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className={styles.errorMessage}>
-          {error}
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading ? (
-        <div className={styles.loading}>Loading appointments...</div>
-      ) : (
-        <>
-          {/* Appointments List */}
-          {filteredAppointments.length === 0 ? (
-            <div className={styles.noAppointments}>
-              <p>No appointments found.</p>
-              {(statusFilter !== 'all' || dateFilter) && (
-                <p>Try adjusting your filters.</p>
-              )}
-            </div>
-          ) : (
-            <div className={styles.appointmentsList}>
-              {filteredAppointments.map((appointment) => (
-                <div
-                  key={appointment._id}
-                  className={`${styles.appointmentCard} ${selectedAppointment?._id === appointment._id ? styles.selected : ''}`}
-                  onClick={() => setSelectedAppointment(appointment)}
-                >
-                  <div className={styles.appointmentHeader}>
-                    <div className={styles.appointmentInfo}>
-                      <h3>{appointment.clientName}</h3>
-                      <p className={styles.serviceName}>{appointment.service}</p>
-                    </div>
-                    <div
-                      className={styles.statusBadge}
-                      style={{ backgroundColor: getStatusColor(appointment.status) }}
-                    >
-                      {appointment.status}
-                    </div>
-                  </div>
-                  <div className={styles.appointmentDetails}>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailIcon}>📅</span>
-                      <span>{formatDate(appointment.startTime)}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailIcon}>🕐</span>
-                      <span>{formatTime(appointment.startTime)}</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailIcon}>📧</span>
-                      <span>{appointment.clientEmail}</span>
-                    </div>
-                    {appointment.clientPhone && (
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailIcon}>📱</span>
-                        <span>{appointment.clientPhone}</span>
-                      </div>
-                    )}
-                    {appointment.stylist && (
-                      <div className={styles.detailItem}>
-                        <span className={styles.detailIcon}>💅</span>
-                        <span>Stylist: {appointment.stylist}</span>
-                      </div>
-                    )}
-                  </div>
-                  {appointment.notes && (
-                    <div className={styles.appointmentNotes}>
-                      <strong>Notes:</strong> {appointment.notes}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Appointment Detail Modal */}
-      {selectedAppointment && (
-        <div className={styles.modalOverlay} onClick={() => setSelectedAppointment(null)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h2>Appointment Details</h2>
-              <button onClick={() => setSelectedAppointment(null)} className={styles.closeBtn}>
-                ✕
+            Admin Dashboard
+          </h1>
+          
+          <div className="flex items-center gap-4">
+            {/* Tab Switcher */}
+            <div className="flex bg-white/70 rounded-full p-1 border border-[#b28c66]/20">
+              <button
+                onClick={() => setActiveView('dashboard')}
+                className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
+                  activeView === 'dashboard' 
+                    ? 'bg-[#b28c66] text-white shadow-lg' 
+                    : 'text-gray-700 hover:text-[#b28c66]'
+                }`}
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => setActiveView('analytics')}
+                className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
+                  activeView === 'analytics' 
+                    ? 'bg-[#b28c66] text-white shadow-lg' 
+                    : 'text-gray-700 hover:text-[#b28c66]'
+                }`}
+              >
+                Analytics
               </button>
             </div>
-            <div className={styles.modalBody}>
-              <div className={styles.detailRow}>
-                <strong>Client:</strong>
-                <span>{selectedAppointment.clientName}</span>
-              </div>
-              <div className={styles.detailRow}>
-                <strong>Email:</strong>
-                <span>{selectedAppointment.clientEmail}</span>
-              </div>
-              {selectedAppointment.clientPhone && (
-                <div className={styles.detailRow}>
-                  <strong>Phone:</strong>
-                  <span>{selectedAppointment.clientPhone}</span>
-                </div>
+            
+            {/* Refresh Button */}
+            <button 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="w-12 h-12 flex items-center justify-center rounded-full border-2 border-[#b28c66] text-[#b28c66] hover:bg-[#b28c66] hover:text-white transition-all duration-200 hover:scale-105"
+              title={isRefreshing ? 'Refreshing...' : 'Refresh data'}
+            >
+              {isRefreshing ? (
+                <div className="w-5 h-5 border-2 border-[#b28c66] border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <span className="text-xl">↻</span>
               )}
-              <div className={styles.detailRow}>
-                <strong>Service:</strong>
-                <span>{selectedAppointment.service}</span>
+            </button>
+          </div>
+        </motion.header>
+
+        {/* Dashboard View */}
+        <AnimatePresence mode="wait">
+          {activeView === 'dashboard' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-10"
+            >
+              {/* Stats Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { label: 'Pending', value: stats.pending, border: 'border-[#f59e0b]' },
+                  { label: 'Confirmed', value: stats.confirmed, border: 'border-[#3b82f6]' },
+                  { label: 'Completed', value: stats.completed, border: 'border-[#10b981]' },
+                  { label: 'Cancelled', value: appointments.filter(a => a.status === 'cancelled').length, border: 'border-[#ef4444]' },
+                ].map((stat, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className={`bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md border-2 ${stat.border} hover:-translate-y-[2px] hover:shadow-lg transition-all duration-200 cursor-pointer`}
+                  >
+                    <div className="text-sm text-gray-600 font-semibold uppercase tracking-wide mb-2">
+                      {stat.label}
+                    </div>
+                    <div className="text-4xl font-bold text-gray-900">
+                      {stat.value}
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-              {selectedAppointment.stylist && (
-                <div className={styles.detailRow}>
-                  <strong>Stylist:</strong>
-                  <span>{selectedAppointment.stylist}</span>
+
+              {/* Filter Bar */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40"
+              >
+                <div className="flex flex-wrap gap-4 items-end justify-between">
+                  {/* Status Filter */}
+                  <div className="flex items-center gap-4">
+                    {[
+                      { label: 'All', value: 'all' },
+                      { label: 'Pending', value: 'pending' },
+                      { label: 'Confirmed', value: 'confirmed' },
+                      { label: 'Completed', value: 'completed' },
+                      { label: 'Cancelled', value: 'cancelled' },
+                    ].map((filter) => (
+                      <button
+                        key={filter.value}
+                        onClick={() => setStatusFilter(filter.value)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                          statusFilter === filter.value
+                            ? 'bg-[#b28c66] text-white shadow-md'
+                            : 'bg-white/70 text-gray-700 border border-gray-200 hover:bg-[#b28c66] hover:text-white'
+                        }`}
+                      >
+                        {filter.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Date Presets */}
+                  <div className="flex items-center gap-2">
+                    {[
+                      { label: 'Today', value: 'today' },
+                      { label: 'Week', value: 'week' },
+                      { label: 'Month', value: 'month' },
+                      { label: 'All', value: 'all' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.value}
+                        onClick={() => {
+                          setDatePreset(preset.value as DatePreset);
+                          if (preset.value !== 'all') setDateFilter('');
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                          datePreset === preset.value
+                            ? 'bg-[#b28c66] text-white shadow-sm'
+                            : 'bg-white/70 text-gray-700 border border-gray-200 hover:bg-[#b28c66] hover:text-white'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Date Picker */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => {
+                        setDateFilter(e.target.value);
+                        setDatePreset('all');
+                      }}
+                      className="px-3 py-2 rounded-xl border border-gray-300 bg-white/70 text-sm focus:outline-none focus:border-[#b28c66] transition-all shadow-sm hover:border-[#b28c66]"
+                    />
+                    {dateFilter && (
+                      <button 
+                        onClick={() => setDateFilter('')}
+                        className="px-3 py-2 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
-              <div className={styles.detailRow}>
-                <strong>Date:</strong>
-                <span>{formatDate(selectedAppointment.startTime)}</span>
-              </div>
-              <div className={styles.detailRow}>
-                <strong>Time:</strong>
-                <span>{formatTime(selectedAppointment.startTime)} - {formatTime(selectedAppointment.endTime)}</span>
-              </div>
-              <div className={styles.detailRow}>
-                <strong>Status:</strong>
-                <span
-                  className={styles.statusBadge}
-                  style={{ backgroundColor: getStatusColor(selectedAppointment.status) }}
+              </motion.div>
+
+              {/* Appointments List */}
+              {loading ? (
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center shadow-sm border border-white/40">
+                  <div className="inline-block w-12 h-12 border-4 border-[#b28c66] border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-600 font-medium">Loading appointments...</p>
+                </div>
+              ) : filteredAppointments.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center shadow-sm border border-white/40"
                 >
-                  {selectedAppointment.status}
-                </span>
-              </div>
-              {selectedAppointment.notes && (
-                <div className={styles.detailRow}>
-                  <strong>Notes:</strong>
-                  <span>{selectedAppointment.notes}</span>
+                  <p className="text-6xl mb-4">☕</p>
+                  <p className="text-xl font-semibold text-gray-800 mb-2">
+                    No appointments yet. Enjoy your coffee break.
+                  </p>
+                </motion.div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredAppointments.map((appointment, idx) => (
+                    <motion.div
+                      key={appointment._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      onClick={() => setSelectedAppointment(appointment)}
+                      className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border border-white/40 flex flex-col md:flex-row justify-between items-center gap-4"
+                    >
+                      {/* Left: Avatar and Info */}
+                      <div className="flex items-center gap-4 flex-1">
+                        {/* Avatar */}
+                        <div 
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm"
+                          style={{ backgroundColor: getStatusColor(appointment.status) }}
+                        >
+                          {getInitials(appointment.clientName)}
+                        </div>
+                        
+                        {/* Client Info */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-bold text-gray-900 truncate mb-1">
+                            {appointment.clientName}
+                          </h3>
+                          <p className="text-gray-600 text-sm truncate">
+                            {appointment.service}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right: Date, Time, Status */}
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <div className="text-sm text-gray-600">
+                          <span className="font-semibold">{formatDate(appointment.startTime)}</span>
+                          <span className="mx-2">•</span>
+                          <span>{formatTime(appointment.startTime)}</span>
+                        </div>
+                        <div className="text-sm text-gray-600 truncate max-w-[200px]">
+                          {appointment.clientEmail}
+                        </div>
+                        <span
+                          className="px-3 py-1 rounded-full text-xs font-semibold text-white uppercase whitespace-nowrap"
+                          style={{ backgroundColor: getStatusColor(appointment.status) }}
+                        >
+                          {appointment.status}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               )}
-              <div className={styles.detailRow}>
-                <strong>Booked:</strong>
-                <span>{formatDate(selectedAppointment.createdAt)}</span>
-              </div>
-            </div>
-            <div className={styles.modalActions}>
-              <h3>Update Status</h3>
-              <div className={styles.actionButtons}>
-                {selectedAppointment.status !== 'pending' && (
-                  <button
-                    onClick={() => updateAppointmentStatus(selectedAppointment._id, 'pending')}
-                    className={`${styles.actionBtn} ${styles.pending}`}
-                  >
-                    Mark Pending
-                  </button>
-                )}
-                {selectedAppointment.status !== 'confirmed' && (
-                  <button
-                    onClick={() => updateAppointmentStatus(selectedAppointment._id, 'confirmed')}
-                    className={`${styles.actionBtn} ${styles.confirmed}`}
-                  >
-                    Confirm
-                  </button>
-                )}
-                {selectedAppointment.status !== 'completed' && (
-                  <button
-                    onClick={() => updateAppointmentStatus(selectedAppointment._id, 'completed')}
-                    className={`${styles.actionBtn} ${styles.completed}`}
-                  >
-                    Mark Complete
-                  </button>
-                )}
-                {selectedAppointment.status !== 'cancelled' && (
-                  <button
-                    onClick={() => deleteAppointment(selectedAppointment._id)}
-                    className={`${styles.actionBtn} ${styles.cancelled}`}
-                  >
-                    Cancel Appointment
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-        </div>
-      )}
+            </motion.div>
+          )}
 
-      {/* Analytics View */}
-      {activeView === 'analytics' && (
-        <div className={styles.analyticsView}>
-          {/* Time Period Navigation */}
-          <div className={styles.periodNav}>
-            <button 
-              className={`${styles.periodBtn} ${timePeriod === 'week' ? styles.activePeriod : ''}`}
-              onClick={() => setTimePeriod('week')}
+          {/* Analytics View */}
+          {activeView === 'analytics' && (
+            <motion.div
+              key="analytics"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-10"
             >
-              This Week
-            </button>
-            <button 
-              className={`${styles.periodBtn} ${timePeriod === 'month' ? styles.activePeriod : ''}`}
-              onClick={() => setTimePeriod('month')}
-            >
-              This Month
-            </button>
-            <button 
-              className={`${styles.periodBtn} ${timePeriod === 'quarter' ? styles.activePeriod : ''}`}
-              onClick={() => setTimePeriod('quarter')}
-            >
-              This Quarter
-            </button>
-            <button 
-              className={`${styles.periodBtn} ${timePeriod === 'year' ? styles.activePeriod : ''}`}
-              onClick={() => setTimePeriod('year')}
-            >
-              This Year
-            </button>
-          </div>
+              {/* Key Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { label: 'Total', value: stats.total, border: 'border-[#b28c66]' },
+                  { label: 'Completed', value: stats.completed, border: 'border-[#10b981]' },
+                  { label: 'Confirmed', value: stats.confirmed, border: 'border-[#3b82f6]' },
+                  { label: 'Pending', value: stats.pending, border: 'border-[#f59e0b]' },
+                ].map((stat, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className={`bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md border-2 ${stat.border} hover:-translate-y-[2px] hover:shadow-lg transition-all duration-200`}
+                  >
+                    <div className="text-sm text-gray-600 font-semibold uppercase tracking-wide mb-2">
+                      {stat.label}
+                    </div>
+                    <div className="text-4xl font-bold text-gray-900">
+                      {stat.value}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
 
-          {/* Analytics Metrics */}
-          <div className={styles.analyticsMetrics}>
-            <div className={styles.metricCard}>
-              <div className={`${styles.metricIcon} ${styles.revenue}`}>💰</div>
-              <div className={styles.metricContent}>
-                <h3>{formatCurrency(analytics.revenue)}</h3>
-                <p>Total Revenue</p>
-                <span className={styles.metricChange}>+{analytics.revenueChange}%</span>
-              </div>
-            </div>
-            <div className={styles.metricCard}>
-              <div className={`${styles.metricIcon} ${styles.appointments}`}>📅</div>
-              <div className={styles.metricContent}>
-                <h3>{analytics.appointments}</h3>
-                <p>Total Appointments</p>
-                <span className={styles.metricChange}>+{analytics.appointmentsChange}%</span>
-              </div>
-            </div>
-            <div className={styles.metricCard}>
-              <div className={`${styles.metricIcon} ${styles.clients}`}>👥</div>
-              <div className={styles.metricContent}>
-                <h3>{analytics.activeClients}</h3>
-                <p>Active Clients</p>
-                <span className={styles.metricChange}>+{analytics.clientsChange}%</span>
-              </div>
-            </div>
-            <div className={styles.metricCard}>
-              <div className={`${styles.metricIcon} ${styles.rating}`}>⭐</div>
-              <div className={styles.metricContent}>
-                <h3>{analytics.avgRating}</h3>
-                <p>Average Rating</p>
-                <span className={styles.metricChange}>+{analytics.ratingChange}%</span>
-              </div>
-            </div>
-            <div className={styles.metricCard}>
-              <div className={`${styles.metricIcon} ${styles.conversion}`}>🎯</div>
-              <div className={styles.metricContent}>
-                <h3>{analytics.conversionRate}%</h3>
-                <p>Conversion Rate</p>
-                <span className={styles.metricChange}>+{analytics.conversionChange}%</span>
-              </div>
-            </div>
-            <div className={styles.metricCard}>
-              <div className={`${styles.metricIcon} ${styles.retention}`}>🔄</div>
-              <div className={styles.metricContent}>
-                <h3>{analytics.retentionRate}%</h3>
-                <p>Client Retention</p>
-                <span className={styles.metricChange}>+{analytics.retentionChange}%</span>
-              </div>
-            </div>
-          </div>
+              {/* Services Breakdown */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40"
+              >
+                <h3 className="text-2xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+                  Services Breakdown
+                </h3>
+                {(() => {
+                  const serviceCounts: { [key: string]: number } = {};
+                  appointments.forEach(apt => {
+                    serviceCounts[apt.service] = (serviceCounts[apt.service] || 0) + 1;
+                  });
+                  const sortedServices = Object.entries(serviceCounts)
+                    .sort((a, b) => b[1] - a[1]);
 
-          {/* Charts Section */}
-          <div className={styles.chartsSection}>
-            <div className={styles.chartRow}>
-              <div className={styles.chartContainer}>
-                <div className={styles.chartHeader}>
-                  <h3>Revenue Trends</h3>
-                </div>
-                <div className={styles.chartWrapper}>
-                  {typeof window !== 'undefined' && <Line data={getRevenueChartData()} options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                      y: {
-                        beginAtZero: true,
-                        ticks: {
-                          callback: function(value: any) {
-                            return '$' + value;
-                          }
-                        }
-                      }
-                    }
-                  }} />}
-                </div>
-              </div>
-              <div className={styles.chartContainer}>
-                <div className={styles.chartHeader}>
-                  <h3>Appointment Distribution</h3>
-                </div>
-                <div className={styles.chartWrapper}>
-                  {typeof window !== 'undefined' && <Doughnut data={getDistributionChartData()} options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
-                  }} />}
-                </div>
-              </div>
-            </div>
-            <div className={styles.chartRow}>
-              <div className={styles.chartContainer}>
-                <div className={styles.chartHeader}>
-                  <h3>Popular Services</h3>
-                </div>
-                <div className={styles.chartWrapper}>
-                  {typeof window !== 'undefined' && <Bar data={getServicesChartData()} options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                  }} />}
-                </div>
-              </div>
-              <div className={styles.chartContainer}>
-                <div className={styles.chartHeader}>
-                  <h3>Client Growth</h3>
-                </div>
-                <div className={styles.chartWrapper}>
-                  {typeof window !== 'undefined' && <Line data={{
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    datasets: [{
-                      label: 'New Clients',
-                      data: [12, 15, 18, 21],
-                      borderColor: '#10b981',
-                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                      borderWidth: 3,
-                      fill: true,
-                      tension: 0.4
-                    }]
-                  }} options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                  }} />}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Analytics Tables */}
-          <div className={styles.analyticsTables}>
-            <div className={styles.tableContainer}>
-              <div className={styles.tableHeader}>
-                <h3>Top Performing Services</h3>
-                <button className={styles.exportBtn}>Export</button>
-              </div>
-              <div className={styles.tableWrapper}>
-                <table className={styles.analyticsTable}>
-                  <thead>
-                    <tr>
-                      <th>Service</th>
-                      <th>Bookings</th>
-                      <th>Revenue</th>
-                      <th>Avg. Duration</th>
-                      <th>Rating</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getTopServices().map((service, idx) => (
-                      <tr key={idx}>
-                        <td>{service.name}</td>
-                        <td>{service.bookings}</td>
-                        <td>{formatCurrency(service.revenue)}</td>
-                        <td>{service.duration}</td>
-                        <td>{service.rating} ⭐</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className={styles.tableContainer}>
-              <div className={styles.tableHeader}>
-                <h3>Client Analytics</h3>
-                <button className={styles.exportBtn}>Export</button>
-              </div>
-              <div className={styles.tableWrapper}>
-                <table className={styles.analyticsTable}>
-                  <thead>
-                    <tr>
-                      <th>Client Name</th>
-                      <th>Total Visits</th>
-                      <th>Last Visit</th>
-                      <th>Total Spent</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getTopClients().map((client, idx) => (
-                      <tr key={idx}>
-                        <td>{client.name}</td>
-                        <td>{client.visits}</td>
-                        <td>{client.lastVisit}</td>
-                        <td>{formatCurrency(client.totalSpent)}</td>
-                        <td>
-                          <span className={`${styles.statusTag} ${client.status === 'Active' ? styles.active : styles.inactive}`}>
-                            {client.status}
+                  return sortedServices.length === 0 ? (
+                    <p className="text-gray-500">No service data available</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {sortedServices.map(([service, count]) => (
+                        <div 
+                          key={service} 
+                          className="flex items-center justify-between p-3 bg-white/50 rounded-xl border border-gray-100"
+                        >
+                          <span className="font-medium text-gray-900">{service}</span>
+                          <span className="px-3 py-1 rounded-full bg-[#b28c66] text-white text-sm font-semibold">
+                            {count}
                           </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </motion.div>
 
-          {/* Stylist Performance */}
-          <div className={styles.stylistPerformance}>
-            <div className={styles.sectionHeader}>
-              <h3>Stylist Performance</h3>
-            </div>
-            <div className={styles.stylistCards}>
-              {getStylistPerformance().map((stylist, idx) => (
-                <div key={idx} className={styles.stylistCard}>
-                  <div className={styles.stylistCardHeader}>
-                    <div className={styles.stylistAvatar}>{stylist.name.charAt(0)}</div>
-                    <div className={styles.stylistInfo}>
-                      <h4>{stylist.name}</h4>
-                      <p>Senior Stylist</p>
+              {/* Recent Appointments Table */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/40 overflow-hidden"
+              >
+                <div className="p-6 border-b border-gray-200">
+                  <h3 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>
+                    Recent Appointments
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  {filteredAppointments.length === 0 ? (
+                    <div className="p-12 text-center text-gray-500">
+                      No appointments to display
                     </div>
-                  </div>
-                  <div className={styles.stylistMetrics}>
-                    <div className={styles.stylistMetric}>
-                      <div className={styles.stylistMetricValue}>{formatCurrency(stylist.metrics.revenue)}</div>
-                      <div className={styles.stylistMetricLabel}>Revenue</div>
+                  ) : (
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Service</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredAppointments.slice(0, 10).map((apt, idx) => (
+                          <tr 
+                            key={apt._id} 
+                            className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                              idx === 9 ? 'border-0' : ''
+                            }`}
+                          >
+                            <td className="py-4 px-4 font-medium text-gray-900">{apt.clientName}</td>
+                            <td className="py-4 px-4 text-gray-600">{apt.service}</td>
+                            <td className="py-4 px-4 text-gray-600">{formatDate(apt.startTime)}</td>
+                            <td className="py-4 px-4">
+                              <span 
+                                className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white whitespace-nowrap"
+                                style={{ backgroundColor: getStatusColor(apt.status) }}
+                              >
+                                {apt.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Details Modal */}
+        <AnimatePresence>
+          {selectedAppointment && (
+            <div
+              onClick={() => setSelectedAppointment(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>
+                    Appointment Details
+                  </h2>
+                  <button
+                    onClick={() => setSelectedAppointment(null)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Modal Body */}
+                <div className="space-y-4 mb-6">
+                  {[
+                    { label: 'Client', value: selectedAppointment.clientName },
+                    { label: 'Email', value: selectedAppointment.clientEmail },
+                    { label: 'Service', value: selectedAppointment.service },
+                    { label: 'Date', value: formatDate(selectedAppointment.startTime) },
+                    { label: 'Time', value: `${formatTime(selectedAppointment.startTime)} - ${formatTime(selectedAppointment.endTime)}` },
+                    { label: 'Status', value: selectedAppointment.status, isStatus: true },
+                    ...(selectedAppointment.notes ? [{ label: 'Notes', value: selectedAppointment.notes }] : []),
+                  ].map((item) => (
+                    <div key={item.label} className="border-b border-gray-100 pb-3 last:border-0">
+                      <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">{item.label}</div>
+                      <div className={`text-gray-900 font-medium ${item.isStatus ? '' : ''}`}>
+                        {item.isStatus ? (
+                          <span
+                            className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white"
+                            style={{ backgroundColor: getStatusColor(item.value) }}
+                          >
+                            {item.value.toUpperCase()}
+                          </span>
+                        ) : (
+                          item.value
+                        )}
+                      </div>
                     </div>
-                    <div className={styles.stylistMetric}>
-                      <div className={styles.stylistMetricValue}>{stylist.metrics.appointments}</div>
-                      <div className={styles.stylistMetricLabel}>Appointments</div>
-                    </div>
-                    <div className={styles.stylistMetric}>
-                      <div className={styles.stylistMetricValue}>{stylist.metrics.rating}</div>
-                      <div className={styles.stylistMetricLabel}>Rating</div>
-                    </div>
-                    <div className={styles.stylistMetric}>
-                      <div className={styles.stylistMetricValue}>{stylist.metrics.satisfaction}%</div>
-                      <div className={styles.stylistMetricLabel}>Satisfaction</div>
-                    </div>
+                  ))}
+                </div>
+
+                {/* Modal Actions */}
+                <div className="space-y-3 pt-6 border-t border-gray-200">
+                  <div className="text-sm font-semibold text-gray-700 mb-3">Update Status</div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {selectedAppointment.status !== 'pending' && (
+                      <button
+                        onClick={() => updateAppointmentStatus(selectedAppointment._id, 'pending')}
+                        className="py-2 rounded-full font-semibold text-white bg-[#f59e0b] shadow-md hover:opacity-90 transition-all duration-200"
+                      >
+                        Pending
+                      </button>
+                    )}
+                    {selectedAppointment.status !== 'confirmed' && (
+                      <button
+                        onClick={() => updateAppointmentStatus(selectedAppointment._id, 'confirmed')}
+                        className="py-2 rounded-full font-semibold text-white bg-[#3b82f6] shadow-md hover:opacity-90 transition-all duration-200"
+                      >
+                        Confirm
+                      </button>
+                    )}
+                    {selectedAppointment.status !== 'completed' && (
+                      <button
+                        onClick={() => updateAppointmentStatus(selectedAppointment._id, 'completed')}
+                        className="py-2 rounded-full font-semibold text-white bg-[#10b981] shadow-md hover:opacity-90 transition-all duration-200"
+                      >
+                        Complete
+                      </button>
+                    )}
+                    {selectedAppointment.status !== 'cancelled' && (
+                      <button
+                        onClick={() => deleteAppointment(selectedAppointment._id)}
+                        className="py-2 rounded-full font-semibold text-white bg-[#ef4444] shadow-md hover:opacity-90 transition-all duration-200 col-span-2"
+                      >
+                        Cancel Appointment
+                      </button>
+                    )}
                   </div>
                 </div>
-              ))}
+              </motion.div>
             </div>
-          </div>
-
-          {/* Business Insights */}
-          <div className={styles.insightsSection}>
-            <div className={styles.sectionHeader}>
-              <h3>Business Insights</h3>
-              <button className={styles.refreshInsightsBtn}>Refresh</button>
-            </div>
-            <div className={styles.insightsGrid}>
-              {getBusinessInsights().map((insight, idx) => (
-                <div key={idx} className={styles.insightCard}>
-                  <div className={styles.insightCardHeader}>
-                    <div className={`${styles.insightIcon} ${styles[insight.type]}`}>{insight.icon}</div>
-                    <h4 className={styles.insightTitle}>{insight.title}</h4>
-                  </div>
-                  <p className={styles.insightDescription}>{insight.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
-

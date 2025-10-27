@@ -77,10 +77,40 @@ body {
   line-height: 1.6;
   color: var(--text-primary);
   background-color: var(--background-primary);
+  background-image: url('/images/DOWNroundflower.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Mobile background adjustments */
+@media (max-width: 768px) {
+  body {
+    background-image: url('/iphoneimages/iponflow.png');
+    background-size: cover;
+    background-attachment: scroll;
+    background-position: center top;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    background-image: url('/iphoneimages/iponflow.png');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    min-height: 100vh;
+  }
 }
 
 /* Skip Link for Accessibility */
@@ -102,6 +132,7 @@ body {
 
 main {
   padding-top: 0;
+  margin: 0;
   min-height: calc(100vh - 200px);
 }
 
@@ -323,6 +354,15 @@ a:hover {
   :root {
     --spacing-xl: 2rem;
     --spacing-xxl: 3rem;
+  }
+  
+  body {
+    background-image: url('/iphoneimages/iponflow.png');
+    background-attachment: scroll;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    min-height: 100vh;
   }
   
   .footer-content {

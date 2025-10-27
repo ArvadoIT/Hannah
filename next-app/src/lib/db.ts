@@ -8,10 +8,11 @@ import { MongoClient, Db, MongoClientOptions } from 'mongodb';
 
 const uri = process.env.MONGODB_URI || '';
 const options: MongoClientOptions = {
+  retryWrites: true,
+  retryReads: true,
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
   maxPoolSize: 10,
-  minPoolSize: 5,
-  maxIdleTimeMS: 60000,
-  serverSelectionTimeoutMS: 10000,
 };
 
 // Global variables for connection caching in serverless environment
@@ -34,7 +35,13 @@ export async function getMongoClient(): Promise<MongoClient> {
     };
 
     if (!globalWithMongo._mongoClientPromise) {
-      client = new MongoClient(uri, options);
+      // Create fresh client with options
+      const clientOptions = {
+        ...options,
+        tls: true,
+        tlsAllowInvalidCertificates: false,
+      };
+      client = new MongoClient(uri, clientOptions);
       globalWithMongo._mongoClientPromise = client.connect();
     }
     return globalWithMongo._mongoClientPromise;
@@ -42,7 +49,12 @@ export async function getMongoClient(): Promise<MongoClient> {
 
   // In production, use module-level cache
   if (!clientPromise) {
-    client = new MongoClient(uri, options);
+    const clientOptions = {
+      ...options,
+      tls: true,
+      tlsAllowInvalidCertificates: false,
+    };
+    client = new MongoClient(uri, clientOptions);
     clientPromise = client.connect();
   }
 
@@ -54,12 +66,22 @@ export async function getMongoClient(): Promise<MongoClient> {
  * Database name is extracted from connection string or defaults to 'lacque-latte'
  */
 export async function getDatabase(): Promise<Db> {
-  const client = await getMongoClient();
-  
-  // Extract database name from URI or use default
-  const dbName = process.env.MONGODB_DB_NAME || 'lacque-latte';
-  
-  return client.db(dbName);
+  // Skip database connection during build process to avoid build failures
+  if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
+    throw new Error('Database connection skipped during build process');
+  }
+
+  try {
+    const client = await getMongoClient();
+    
+    // Extract database name from URI or use default
+    const dbName = process.env.MONGODB_DB_NAME || 'lacque-latte';
+    
+    return client.db(dbName);
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+    throw error;
+  }
 }
 
 /**
@@ -68,6 +90,12 @@ export async function getDatabase(): Promise<Db> {
  */
 export async function testConnection(): Promise<boolean> {
   try {
+    // Skip connection test during build process to avoid build failures
+    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
+      console.log('⏭️ Skipping MongoDB connection test during build');
+      return false;
+    }
+
     const client = await getMongoClient();
     await client.db('admin').command({ ping: 1 });
     console.log('✅ MongoDB connection successful');

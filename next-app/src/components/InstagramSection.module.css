@@ -1,11 +1,7 @@
 /* Instagram Section Styles */
 .instagramSection {
   padding: 100px 0;
-  background-color: var(--background-secondary);
-  background-image: url('/images/DOWNroundflower.png');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
+  background-color: transparent;
   position: relative;
 }
 
@@ -153,6 +149,7 @@
   box-shadow: 0 4px 15px rgba(196, 53, 132, 0.3);
   position: relative;
   overflow: hidden;
+  z-index: 1;
 }
 
 .instagramButton::before {
@@ -164,6 +161,7 @@
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
+  z-index: 0;
 }
 
 .instagramButton:hover::before {
@@ -171,6 +169,7 @@
 }
 
 .instagramButton:hover {
+  color: white;
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(196, 53, 132, 0.4);
 }
