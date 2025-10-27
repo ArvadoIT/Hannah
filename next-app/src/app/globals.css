@@ -3,6 +3,11 @@
  * Core styling imported from existing Lacque & Latte design
  */
 
+/* Tailwind CSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Note: Great Vibes font removed - use next/font/google if needed
  * Inter and Playfair Display are loaded via layout.tsx */
 

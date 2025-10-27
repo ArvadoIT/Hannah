@@ -4,7 +4,7 @@
   "description": "Lacque & Latte Nail Studio - Next.js with MongoDB",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS='--openssl-legacy-provider' next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

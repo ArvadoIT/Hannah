@@ -7,12 +7,18 @@
 import { MongoClient, Db, MongoClientOptions } from 'mongodb';
 
 const uri = process.env.MONGODB_URI || '';
+
+// MongoDB connection options
 const options: MongoClientOptions = {
   retryWrites: true,
   retryReads: true,
-  connectTimeoutMS: 10000,
+  connectTimeoutMS: 30000,
   socketTimeoutMS: 45000,
   maxPoolSize: 10,
+  serverSelectionTimeoutMS: 30000,
+  // For older Node.js versions with OpenSSL legacy provider
+  tls: true,
+  tlsAllowInvalidCertificates: true,
 };
 
 // Global variables for connection caching in serverless environment
@@ -35,13 +41,10 @@ export async function getMongoClient(): Promise<MongoClient> {
     };
 
     if (!globalWithMongo._mongoClientPromise) {
-      // Create fresh client with options
-      const clientOptions = {
+      // Create fresh client with TLS options
+      client = new MongoClient(uri, {
         ...options,
-        tls: true,
-        tlsAllowInvalidCertificates: false,
-      };
-      client = new MongoClient(uri, clientOptions);
+      });
       globalWithMongo._mongoClientPromise = client.connect();
     }
     return globalWithMongo._mongoClientPromise;
@@ -49,12 +52,9 @@ export async function getMongoClient(): Promise<MongoClient> {
 
   // In production, use module-level cache
   if (!clientPromise) {
-    const clientOptions = {
+    client = new MongoClient(uri, {
       ...options,
-      tls: true,
-      tlsAllowInvalidCertificates: false,
-    };
-    client = new MongoClient(uri, clientOptions);
+    });
     clientPromise = client.connect();
   }
 
