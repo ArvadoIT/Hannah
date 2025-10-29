@@ -34,21 +34,28 @@ export default function HomePage() {
           <div className={styles.aboutContentLayout}>
             <AnimatedElement animationType="fadeInLeft" delay={100}>
               <div className={styles.aboutTextContent}>
-                <h2 className={styles.aboutTitle}>About Us</h2>
+                <h2 className={styles.aboutTitle}>About Hanna</h2>
                 <div className={styles.divider}></div>
                 <p className={styles.introText}>
-                  At Lacque&Latte, <span className={styles.highlight}>beauty</span> is more than a service — it's an experience. Founded by Hannah, 
-                  a Persian artist with a passion for <span className={styles.highlight}>elegance</span> and precision, our studio redefines nail care 
-                  through the perfect harmony of <span className={styles.highlight}>artistry</span> and serenity. Inspired by the soft tones of the 
-                  Mediterranean and the timeless grace of Persian beauty, every detail of our space is designed 
-                  to make you feel at ease and indulged.
+                  Hanna is the owner and nail artist behind Lacque & Latte, a Toronto-based studio focused on quality, care, and modern design. Located at 1519 Bayview Avenue, her salon offers a calm and welcoming space where clients can relax and enjoy professional nail services made with attention to detail.
                 </p>
                 <p className={styles.introTextSecondary}>
-                  From meticulous Russian manicures to bespoke nail art crafted with professional-grade products, 
-                  we bring your vision to life with care, creativity, and unmatched expertise. Step into a world 
-                  where luxury meets <span className={styles.highlight}>tranquility</span> — sip your latte, unwind, and let us perfect the finer details.
+                  Hanna takes pride in her work and strives to make every appointment a comfortable and personalized experience. Her goal is simple — to help clients leave feeling confident, refreshed, and proud of their nails.
                 </p>
-                <div className={styles.signature}>Elegance in every detail. — Hannah</div>
+                <div className={styles.contactInfo}>
+                  <p><strong>Address:</strong> 1519 Bayview Ave, Toronto, ON</p>
+                  <p><strong>Phone:</strong> (437) 333-7242</p>
+                </div>
+                <div className={styles.googleReviewsLink}>
+                  <a 
+                    href="https://share.google/48XHuiGNWbG9DBURg" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className={styles.reviewsButton}
+                  >
+                    ⭐ Read Our Google Reviews
+                  </a>
+                </div>
               </div>
             </AnimatedElement>
             <AnimatedElement animationType="fadeInRight" delay={300}>
@@ -123,6 +130,7 @@ export default function HomePage() {
           ]}
         />
       </AnimatedElement>
+
 
       {/* CTA Section */}
       <AnimatedElement animationType="scaleIn" delay={100}>

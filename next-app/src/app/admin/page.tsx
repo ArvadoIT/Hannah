@@ -23,7 +23,7 @@ interface Appointment {
   createdAt: string;
 }
 
-type ViewTab = 'dashboard' | 'analytics';
+type ViewTab = 'dashboard' | 'analytics' | 'calendar';
 type DatePreset = 'today' | 'week' | 'month' | 'all';
 
 export default function AdminPage() {
@@ -32,15 +32,49 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [dateFilter, setDateFilter] = useState<string>('');
+  const [dateFilter] = useState<string>(''); // Used in filter logic
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const [activeView, setActiveView] = useState<ViewTab>('dashboard');
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [activeView, setActiveView] = useState<ViewTab>('calendar');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [calendarDays, setCalendarDays] = useState<Date[]>([]);
 
   // Fetch appointments
   useEffect(() => {
     fetchAppointments();
   }, []);
+
+  // Generate calendar days
+  useEffect(() => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+
+    const days: Date[] = [];
+    
+    // Add previous month's days
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      const date = new Date(year, month, -startingDayOfWeek + i + 1);
+      days.push(date);
+    }
+    
+    // Add current month's days
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(new Date(year, month, i));
+    }
+    
+    // Add next month's days to fill the grid
+    const remainingDays = 42 - days.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      days.push(new Date(year, month + 1, i));
+    }
+    
+    setCalendarDays(days);
+  }, [currentMonth]);
 
   // Apply filters
   useEffect(() => {
@@ -92,16 +126,20 @@ export default function AdminPage() {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && selectedAppointment) {
-        setSelectedAppointment(null);
+      if (e.key === 'Escape') {
+        if (selectedAppointment) {
+          setSelectedAppointment(null);
+        } else if (selectedDay) {
+          setSelectedDay(null);
+        }
       }
     };
 
-    if (selectedAppointment) {
+    if (selectedAppointment || selectedDay) {
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [selectedAppointment]);
+  }, [selectedAppointment, selectedDay]);
 
   const fetchAppointments = async () => {
     try {
@@ -266,6 +304,16 @@ export default function AdminPage() {
               >
                 Analytics
               </button>
+              <button
+                onClick={() => setActiveView('calendar')}
+                className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
+                  activeView === 'calendar' 
+                    ? 'bg-[#b28c66] text-white shadow-lg' 
+                    : 'text-gray-700 hover:text-[#b28c66]'
+                }`}
+              >
+                Calendar
+              </button>
             </div>
             
             {/* Refresh Button */}
@@ -293,55 +341,190 @@ export default function AdminPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="space-y-10"
+              className="space-y-6"
             >
-              {/* Stats Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {/* Quick Stats Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: 'Pending', value: stats.pending, border: 'border-[#f59e0b]' },
-                  { label: 'Confirmed', value: stats.confirmed, border: 'border-[#3b82f6]' },
-                  { label: 'Completed', value: stats.completed, border: 'border-[#10b981]' },
-                  { label: 'Cancelled', value: appointments.filter(a => a.status === 'cancelled').length, border: 'border-[#ef4444]' },
+                  { 
+                    label: 'Today', 
+                    value: stats.today, 
+                    icon: '💅',
+                    bg: 'bg-gradient-to-br from-[#b28c66] to-[#7e6854]',
+                    description: 'Clients today',
+                    onClick: () => {
+                      setDatePreset('today');
+                      setStatusFilter('all');
+                    }
+                  },
+                  { 
+                    label: 'Pending', 
+                    value: stats.pending, 
+                    icon: '⏳',
+                    bg: 'bg-gradient-to-br from-[#f59e0b] to-[#d97706]',
+                    description: 'Need confirmation',
+                    onClick: () => setStatusFilter('pending')
+                  },
+                  { 
+                    label: 'Confirmed', 
+                    value: stats.confirmed, 
+                    icon: '✅',
+                    bg: 'bg-gradient-to-br from-[#3b82f6] to-[#2563eb]',
+                    description: 'Ready for service',
+                    onClick: () => setStatusFilter('confirmed')
+                  },
+                  { 
+                    label: 'Completed', 
+                    value: stats.completed, 
+                    icon: '✨',
+                    bg: 'bg-gradient-to-br from-[#10b981] to-[#059669]',
+                    description: 'Services done',
+                    onClick: () => setStatusFilter('completed')
+                  },
                 ].map((stat, idx) => (
                   <motion.div
                     key={idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: idx * 0.1 }}
-                    className={`bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md border-2 ${stat.border} hover:-translate-y-[2px] hover:shadow-lg transition-all duration-200 cursor-pointer`}
+                    onClick={stat.onClick}
+                    className={`${stat.bg} rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:-translate-y-1 hover:scale-105`}
                   >
-                    <div className="text-sm text-gray-600 font-semibold uppercase tracking-wide mb-2">
-                      {stat.label}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-3xl">{stat.icon}</div>
+                      <div className="text-white/80 text-xs font-medium">{stat.description}</div>
                     </div>
-                    <div className="text-4xl font-bold text-gray-900">
+                    <div className="text-3xl font-bold text-white mb-1">
                       {stat.value}
+                    </div>
+                    <div className="text-white/90 text-sm font-semibold uppercase tracking-wide">
+                      {stat.label}
                     </div>
                   </motion.div>
                 ))}
               </div>
 
-              {/* Filter Bar */}
+              {/* Today's Schedule & Quick Actions */}
+              <div className="grid md:grid-cols-3 gap-6">
+                {/* Today's Appointments */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="md:col-span-2 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>
+                      Today's Schedule
+                    </h2>
+                    <span className="px-3 py-1 bg-[#b28c66]/10 text-[#b28c66] rounded-full text-sm font-semibold">
+                      {formatDate(new Date().toISOString())}
+                    </span>
+                  </div>
+                  {(() => {
+                    const todayAppointments = appointments.filter(apt => {
+                      const aptDate = new Date(apt.startTime).toISOString().split('T')[0];
+                      const today = new Date().toISOString().split('T')[0];
+                      return aptDate === today && apt.status !== 'cancelled';
+                    }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+                    return todayAppointments.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="text-5xl mb-3">💅</div>
+                        <p className="text-gray-600 font-medium">No appointments scheduled for today</p>
+                        <p className="text-sm text-gray-500 mt-2">Enjoy your break!</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {todayAppointments.map((apt) => (
+                          <div
+                            key={apt._id}
+                            onClick={() => setSelectedAppointment(apt)}
+                            className="flex items-center gap-4 p-4 bg-white/50 rounded-xl border border-gray-100 hover:border-[#b28c66] hover:shadow-md transition-all cursor-pointer"
+                          >
+                            <div 
+                              className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+                              style={{ backgroundColor: getStatusColor(apt.status) }}
+                            >
+                              {getInitials(apt.clientName)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-gray-900 truncate">{apt.clientName}</h3>
+                              <p className="text-sm text-gray-600 truncate">{apt.service}</p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <div className="font-bold text-gray-900">{formatTime(apt.startTime)}</div>
+                              <div className="text-xs text-gray-500">Duration: {Math.round((new Date(apt.endTime).getTime() - new Date(apt.startTime).getTime()) / 60000)}m</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </motion.div>
+
+                {/* Quick Actions & Stats */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-4"
+                >
+                  {/* Completion Rate */}
+                  <div className="bg-gradient-to-br from-[#10b981] to-[#059669] rounded-2xl p-6 shadow-lg text-white cursor-pointer transform hover:scale-105 transition-all" onClick={() => setStatusFilter('completed')}>
+                    <div className="text-4xl mb-2">✨</div>
+                    <div className="text-3xl font-bold mb-1">
+                      {stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%
+                    </div>
+                    <div className="text-white/90 text-sm font-semibold">Services Completed</div>
+                    <div className="text-white/70 text-xs mt-1">Click to view all</div>
+                  </div>
+
+                  {/* Status Breakdown */}
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-white/40">
+                    <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Status Overview</h3>
+                    <div className="space-y-2">
+                      {[
+                        { label: 'Completed', value: stats.completed, color: '#10b981' },
+                        { label: 'Confirmed', value: stats.confirmed, color: '#3b82f6' },
+                        { label: 'Pending', value: stats.pending, color: '#f59e0b' },
+                        { label: 'Cancelled', value: appointments.filter(a => a.status === 'cancelled').length, color: '#ef4444' },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                            <span className="text-xs text-gray-700 font-medium">{item.label}</span>
+                          </div>
+                          <span className="text-sm font-bold text-gray-900">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Recent Appointments List */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40"
               >
-                <div className="flex flex-wrap gap-4 items-end justify-between">
-                  {/* Status Filter */}
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>
+                    Recent Appointments
+                  </h2>
+                  
+                  {/* Compact Filters */}
+                  <div className="flex items-center gap-2">
                     {[
                       { label: 'All', value: 'all' },
                       { label: 'Pending', value: 'pending' },
                       { label: 'Confirmed', value: 'confirmed' },
-                      { label: 'Completed', value: 'completed' },
-                      { label: 'Cancelled', value: 'cancelled' },
                     ].map((filter) => (
                       <button
                         key={filter.value}
                         onClick={() => setStatusFilter(filter.value)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                           statusFilter === filter.value
-                            ? 'bg-[#b28c66] text-white shadow-md'
+                            ? 'bg-[#b28c66] text-white shadow-sm'
                             : 'bg-white/70 text-gray-700 border border-gray-200 hover:bg-[#b28c66] hover:text-white'
                         }`}
                       >
@@ -349,74 +532,24 @@ export default function AdminPage() {
                       </button>
                     ))}
                   </div>
-
-                  {/* Date Presets */}
-                  <div className="flex items-center gap-2">
-                    {[
-                      { label: 'Today', value: 'today' },
-                      { label: 'Week', value: 'week' },
-                      { label: 'Month', value: 'month' },
-                      { label: 'All', value: 'all' },
-                    ].map((preset) => (
-                      <button
-                        key={preset.value}
-                        onClick={() => {
-                          setDatePreset(preset.value as DatePreset);
-                          if (preset.value !== 'all') setDateFilter('');
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                          datePreset === preset.value
-                            ? 'bg-[#b28c66] text-white shadow-sm'
-                            : 'bg-white/70 text-gray-700 border border-gray-200 hover:bg-[#b28c66] hover:text-white'
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Date Picker */}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="date"
-                      value={dateFilter}
-                      onChange={(e) => {
-                        setDateFilter(e.target.value);
-                        setDatePreset('all');
-                      }}
-                      className="px-3 py-2 rounded-xl border border-gray-300 bg-white/70 text-sm focus:outline-none focus:border-[#b28c66] transition-all shadow-sm hover:border-[#b28c66]"
-                    />
-                    {dateFilter && (
-                      <button 
-                        onClick={() => setDateFilter('')}
-                        className="px-3 py-2 bg-red-500 text-white rounded-xl text-sm hover:bg-red-600 transition-colors"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
                 </div>
-              </motion.div>
 
-              {/* Appointments List */}
-              {loading ? (
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center shadow-sm border border-white/40">
-                  <div className="inline-block w-12 h-12 border-4 border-[#b28c66] border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="text-gray-600 font-medium">Loading appointments...</p>
-                </div>
-              ) : filteredAppointments.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center shadow-sm border border-white/40"
-                >
-                  <p className="text-6xl mb-4">☕</p>
-                  <p className="text-xl font-semibold text-gray-800 mb-2">
-                    No appointments yet. Enjoy your coffee break.
-                  </p>
-                </motion.div>
-              ) : (
-                <div className="space-y-4">
+                {/* Appointments List */}
+                {loading ? (
+                  <div className="py-12 text-center">
+                    <div className="inline-block w-12 h-12 border-4 border-[#b28c66] border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="text-gray-600 font-medium">Loading appointments...</p>
+                  </div>
+                ) : filteredAppointments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-5xl mb-3">💅</p>
+                    <p className="text-lg font-semibold text-gray-800 mb-2">
+                      No appointments found
+                    </p>
+                    <p className="text-sm text-gray-500">Try adjusting your filters or check back later</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
                   {filteredAppointments.map((appointment, idx) => (
                     <motion.div
                       key={appointment._id}
@@ -424,54 +557,37 @@ export default function AdminPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       onClick={() => setSelectedAppointment(appointment)}
-                      className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border border-white/40 flex flex-col md:flex-row justify-between items-center gap-4"
+                      className="flex items-center gap-4 p-4 bg-white/50 rounded-xl border border-gray-100 hover:border-[#b28c66] hover:shadow-md transition-all cursor-pointer"
                     >
-                      {/* Left: Avatar and Info */}
-                      <div className="flex items-center gap-4 flex-1">
-                        {/* Avatar */}
-                        <div 
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm"
-                          style={{ backgroundColor: getStatusColor(appointment.status) }}
-                        >
-                          {getInitials(appointment.clientName)}
-                        </div>
-                        
-                        {/* Client Info */}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-bold text-gray-900 truncate mb-1">
-                            {appointment.clientName}
-                          </h3>
-                          <p className="text-gray-600 text-sm truncate">
-                            {appointment.service}
-                          </p>
-                        </div>
+                      <div 
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                        style={{ backgroundColor: getStatusColor(appointment.status) }}
+                      >
+                        {getInitials(appointment.clientName)}
                       </div>
-
-                      {/* Right: Date, Time, Status */}
-                      <div className="flex items-center gap-4 flex-wrap">
-                        <div className="text-sm text-gray-600">
-                          <span className="font-semibold">{formatDate(appointment.startTime)}</span>
-                          <span className="mx-2">•</span>
-                          <span>{formatTime(appointment.startTime)}</span>
-                        </div>
-                        <div className="text-sm text-gray-600 truncate max-w-[200px]">
-                          {appointment.clientEmail}
-                        </div>
-                        <span
-                          className="px-3 py-1 rounded-full text-xs font-semibold text-white uppercase whitespace-nowrap"
-                          style={{ backgroundColor: getStatusColor(appointment.status) }}
-                        >
-                          {appointment.status}
-                        </span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 truncate">{appointment.clientName}</h3>
+                        <p className="text-sm text-gray-600 truncate">{appointment.service}</p>
                       </div>
+                      <div className="text-sm text-gray-600 flex-shrink-0">
+                        <div className="font-semibold">{formatDate(appointment.startTime)}</div>
+                        <div className="text-xs">{formatTime(appointment.startTime)}</div>
+                      </div>
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-semibold text-white whitespace-nowrap flex-shrink-0"
+                        style={{ backgroundColor: getStatusColor(appointment.status) }}
+                      >
+                        {appointment.status}
+                      </span>
                     </motion.div>
                   ))}
                 </div>
-              )}
+                )}
+              </motion.div>
             </motion.div>
           )}
 
-          {/* Analytics View */}
+          {/* Analytics View - Data Insights */}
           {activeView === 'analytics' && (
             <motion.div
               key="analytics"
@@ -479,122 +595,350 @@ export default function AdminPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="space-y-10"
+              className="space-y-6"
             >
-              {/* Key Metrics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {[
-                  { label: 'Total', value: stats.total, border: 'border-[#b28c66]' },
-                  { label: 'Completed', value: stats.completed, border: 'border-[#10b981]' },
-                  { label: 'Confirmed', value: stats.confirmed, border: 'border-[#3b82f6]' },
-                  { label: 'Pending', value: stats.pending, border: 'border-[#f59e0b]' },
-                ].map((stat, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className={`bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md border-2 ${stat.border} hover:-translate-y-[2px] hover:shadow-lg transition-all duration-200`}
-                  >
-                    <div className="text-sm text-gray-600 font-semibold uppercase tracking-wide mb-2">
-                      {stat.label}
-                    </div>
-                    <div className="text-4xl font-bold text-gray-900">
-                      {stat.value}
-                    </div>
-                  </motion.div>
-                ))}
+              {/* Analytics Overview Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {(() => {
+                  const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+                  const pendingRate = stats.total > 0 ? Math.round((stats.pending / stats.total) * 100) : 0;
+                  const avgAppointmentsPerWeek = Math.round(stats.total / 52);
+
+                  return [
+                    { 
+                      label: 'Completion Rate', 
+                      value: `${completionRate}%`,
+                      icon: '✨',
+                      bg: 'bg-gradient-to-br from-[#10b981] to-[#059669]',
+                      description: 'Services completed'
+                    },
+                    { 
+                      label: 'Pending Rate', 
+                      value: `${pendingRate}%`,
+                      icon: '⏳',
+                      bg: 'bg-gradient-to-br from-[#f59e0b] to-[#d97706]',
+                      description: 'Awaiting confirmation'
+                    },
+                    { 
+                      label: 'Weekly Avg', 
+                      value: avgAppointmentsPerWeek,
+                      icon: '📅',
+                      bg: 'bg-gradient-to-br from-[#3b82f6] to-[#2563eb]',
+                      description: 'Clients per week'
+                    },
+                  ].map((stat, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className={`${stat.bg} rounded-2xl p-6 shadow-lg text-white`}
+                    >
+                      <div className="text-4xl mb-3">{stat.icon}</div>
+                      <div className="text-3xl font-bold mb-1">{stat.value}</div>
+                      <div className="text-white/90 text-sm font-semibold mb-1">{stat.label}</div>
+                      <div className="text-white/70 text-xs">{stat.description}</div>
+                    </motion.div>
+                  ));
+                })()}
               </div>
 
-              {/* Services Breakdown */}
+              {/* Services Analytics */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Services Breakdown */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
+                    <span className="text-2xl">💅</span>
+                    Most Popular Services
+                  </h3>
+                  {(() => {
+                    const serviceCounts: { [key: string]: number } = {};
+                    appointments.forEach(apt => {
+                      serviceCounts[apt.service] = (serviceCounts[apt.service] || 0) + 1;
+                    });
+                    const sortedServices = Object.entries(serviceCounts)
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 5);
+                    const maxCount = sortedServices[0]?.[1] || 1;
+
+                    return sortedServices.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">No service data available</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {sortedServices.map(([service, count]) => {
+                          const percentage = (count / maxCount) * 100;
+                          return (
+                            <div key={service}>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-gray-900 text-sm truncate flex-1">{service}</span>
+                                <span className="px-3 py-1 rounded-full bg-[#b28c66] text-white text-sm font-bold ml-2">
+                                  {count}
+                                </span>
+                              </div>
+                              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-[#b28c66] to-[#7e6854] rounded-full transition-all duration-500"
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </motion.div>
+
+                {/* Status Distribution */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40"
+                >
+                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
+                    <span className="text-2xl">📊</span>
+                    Status Distribution
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { label: 'Completed', value: stats.completed, color: '#10b981', icon: '✓' },
+                      { label: 'Confirmed', value: stats.confirmed, color: '#3b82f6', icon: '✓' },
+                      { label: 'Pending', value: stats.pending, color: '#f59e0b', icon: '⏳' },
+                      { label: 'Cancelled', value: appointments.filter(a => a.status === 'cancelled').length, color: '#ef4444', icon: '✕' },
+                    ].map((item) => {
+                      const percentage = stats.total > 0 ? (item.value / stats.total) * 100 : 0;
+                      return (
+                        <div key={item.label}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{item.icon}</span>
+                              <span className="font-medium text-gray-900 text-sm">{item.label}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm text-gray-600 font-medium">{Math.round(percentage)}%</span>
+                              <span className="px-3 py-1 rounded-full text-white text-xs font-bold" style={{ backgroundColor: item.color }}>
+                                {item.value}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${percentage}%`, backgroundColor: item.color }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Recent Activity Timeline */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40"
               >
-                <h3 className="text-2xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'var(--font-display)' }}>
-                  Services Breakdown
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2" style={{ fontFamily: 'var(--font-display)' }}>
+                  <span className="text-2xl">💅</span>
+                  Recent Appointments
                 </h3>
-                {(() => {
-                  const serviceCounts: { [key: string]: number } = {};
-                  appointments.forEach(apt => {
-                    serviceCounts[apt.service] = (serviceCounts[apt.service] || 0) + 1;
-                  });
-                  const sortedServices = Object.entries(serviceCounts)
-                    .sort((a, b) => b[1] - a[1]);
-
-                  return sortedServices.length === 0 ? (
-                    <p className="text-gray-500">No service data available</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {sortedServices.map(([service, count]) => (
+                {filteredAppointments.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No recent activity to display
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredAppointments.slice(0, 5).map((apt) => (
+                      <div
+                        key={apt._id}
+                        onClick={() => setSelectedAppointment(apt)}
+                        className="flex items-center gap-4 p-4 bg-white/50 rounded-xl border border-gray-100 hover:border-[#b28c66] hover:shadow-md transition-all cursor-pointer"
+                      >
                         <div 
-                          key={service} 
-                          className="flex items-center justify-between p-3 bg-white/50 rounded-xl border border-gray-100"
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                          style={{ backgroundColor: getStatusColor(apt.status) }}
                         >
-                          <span className="font-medium text-gray-900">{service}</span>
-                          <span className="px-3 py-1 rounded-full bg-[#b28c66] text-white text-sm font-semibold">
-                            {count}
-                          </span>
+                          {getInitials(apt.clientName)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-gray-900">{apt.clientName}</span>
+                            <span 
+                              className="px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                              style={{ backgroundColor: getStatusColor(apt.status) }}
+                            >
+                              {apt.status}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {apt.service} • {formatDate(apt.startTime)} at {formatTime(apt.startTime)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Calendar View */}
+          {activeView === 'calendar' && (
+            <motion.div
+              key="calendar"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Calendar Header */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40">
+                <div className="flex items-center justify-between mb-4">
+                  <button
+                    onClick={() => {
+                      const prevMonth = new Date(currentMonth);
+                      prevMonth.setMonth(prevMonth.getMonth() - 1);
+                      setCurrentMonth(prevMonth);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#b28c66] hover:text-white transition-all text-gray-700"
+                  >
+                    ←
+                  </button>
+                  <div className="flex flex-col items-center gap-1">
+                    <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>
+                      {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </h2>
+                    <button
+                      onClick={() => setCurrentMonth(new Date())}
+                      className="text-xs text-[#b28c66] hover:underline font-medium"
+                    >
+                      Today
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const nextMonth = new Date(currentMonth);
+                      nextMonth.setMonth(nextMonth.getMonth() + 1);
+                      setCurrentMonth(nextMonth);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#b28c66] hover:text-white transition-all text-gray-700"
+                  >
+                    →
+                  </button>
+                </div>
+
+                {/* Calendar Grid */}
+                {loading ? (
+                  <div className="py-12 text-center">
+                    <div className="inline-block w-12 h-12 border-4 border-[#b28c66] border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="text-gray-600 font-medium">Loading calendar...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {/* Weekday Headers */}
+                    <div className="grid grid-cols-7 gap-2 mb-2">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                        <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
+                          {day}
                         </div>
                       ))}
                     </div>
-                  );
-                })()}
-              </motion.div>
 
-              {/* Recent Appointments Table */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/40 overflow-hidden"
-              >
-                <div className="p-6 border-b border-gray-200">
-                  <h3 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>
-                    Recent Appointments
-                  </h3>
-                </div>
-                <div className="overflow-x-auto">
-                  {filteredAppointments.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500">
-                      No appointments to display
-                    </div>
-                  ) : (
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Service</th>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredAppointments.slice(0, 10).map((apt, idx) => (
-                          <tr 
-                            key={apt._id} 
-                            className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                              idx === 9 ? 'border-0' : ''
-                            }`}
+                    {/* Calendar Days */}
+                    <div className="grid grid-cols-7 gap-2">
+                      {calendarDays.map((date, index) => {
+                        const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+                        const isToday = date.toDateString() === new Date().toDateString();
+                        const dateStr = date.toISOString().split('T')[0];
+                        
+                        // Get appointments for this date
+                        const dayAppointments = appointments.filter(apt => {
+                          const aptDate = new Date(apt.startTime).toISOString().split('T')[0];
+                          return aptDate === dateStr && apt.status !== 'cancelled';
+                        });
+
+                        return (
+                          <div
+                            key={index}
+                            className={`
+                              min-h-[100px] border-2 rounded-xl p-2 transition-all cursor-pointer
+                              ${isCurrentMonth ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50 opacity-50'}
+                              ${isToday ? 'border-[#b28c66] bg-[#b28c66]/5' : ''}
+                              hover:border-[#b28c66] hover:shadow-md
+                            `}
+                            onClick={() => {
+                              setSelectedDay(date);
+                            }}
                           >
-                            <td className="py-4 px-4 font-medium text-gray-900">{apt.clientName}</td>
-                            <td className="py-4 px-4 text-gray-600">{apt.service}</td>
-                            <td className="py-4 px-4 text-gray-600">{formatDate(apt.startTime)}</td>
-                            <td className="py-4 px-4">
-                              <span 
-                                className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white whitespace-nowrap"
-                                style={{ backgroundColor: getStatusColor(apt.status) }}
-                              >
-                                {apt.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
+                            <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-[#b28c66]' : 'text-gray-700'}`}>
+                              {date.getDate()}
+                            </div>
+                            <div className="space-y-1">
+                              {dayAppointments.slice(0, 3).map((apt) => (
+                                <div
+                                  key={apt._id}
+                                  className="text-xs p-1 rounded truncate text-white shadow-sm"
+                                  style={{ backgroundColor: getStatusColor(apt.status) }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedAppointment(apt);
+                                  }}
+                                  title={`${apt.clientName} - ${formatTime(apt.startTime)}`}
+                                >
+                                  <div className="font-semibold truncate">{apt.clientName}</div>
+                                  <div className="opacity-90">{formatTime(apt.startTime)}</div>
+                                </div>
+                              ))}
+                              {dayAppointments.length > 3 && (
+                                <div className="text-xs text-gray-500 font-semibold">
+                                  +{dayAppointments.length - 3} more
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Legend */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/40">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">💅 Appointment Status</h3>
+                <div className="flex flex-wrap gap-4">
+                  {[
+                    { label: 'Pending', status: 'pending', desc: 'Awaiting confirmation' },
+                    { label: 'Confirmed', status: 'confirmed', desc: 'Ready for service' },
+                    { label: 'Completed', status: 'completed', desc: 'Service finished' },
+                  ].map((item) => (
+                    <div 
+                      key={item.status} 
+                      className="flex items-center gap-3 p-3 bg-white/50 rounded-xl border border-gray-100 hover:border-[#b28c66] transition-all cursor-pointer"
+                      onClick={() => {
+                        setActiveView('dashboard');
+                        setStatusFilter(item.status);
+                      }}
+                    >
+                      <div
+                        className="w-5 h-5 rounded-full shadow-sm"
+                        style={{ backgroundColor: getStatusColor(item.status) }}
+                      />
+                      <div>
+                        <div className="text-sm font-bold text-gray-900">{item.label}</div>
+                        <div className="text-xs text-gray-500">{item.desc}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -693,6 +1037,105 @@ export default function AdminPage() {
                     )}
                   </div>
                 </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Day Schedule Modal */}
+        <AnimatePresence>
+          {selectedDay && (
+            <div
+              onClick={() => setSelectedDay(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>
+                    {selectedDay.toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      month: 'long', 
+                      day: 'numeric', 
+                      year: 'numeric' 
+                    })}
+                  </h2>
+                  <button
+                    onClick={() => setSelectedDay(null)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Day's Appointments */}
+                {(() => {
+                  const dateStr = selectedDay.toISOString().split('T')[0];
+                  const dayAppointments = appointments.filter(apt => {
+                    const aptDate = new Date(apt.startTime).toISOString().split('T')[0];
+                    return aptDate === dateStr && apt.status !== 'cancelled';
+                  }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+                  return dayAppointments.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="text-5xl mb-3">💅</div>
+                      <p className="text-gray-600 font-medium">No appointments scheduled for this day</p>
+                      <p className="text-sm text-gray-500 mt-2">Enjoy your break!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                          {dayAppointments.length} appointment{dayAppointments.length !== 1 ? 's' : ''} scheduled
+                        </span>
+                        <span className="px-3 py-1 bg-[#b28c66]/10 text-[#b28c66] rounded-full text-sm font-semibold">
+                          {dayAppointments.length} total
+                        </span>
+                      </div>
+                      
+                      {dayAppointments.map((appointment, index) => (
+                        <motion.div
+                          key={appointment._id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          onClick={() => {
+                            setSelectedDay(null);
+                            setSelectedAppointment(appointment);
+                          }}
+                          className="flex items-center gap-4 p-4 bg-white/50 rounded-xl border border-gray-100 hover:border-[#b28c66] hover:shadow-md transition-all cursor-pointer"
+                        >
+                          <div 
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+                            style={{ backgroundColor: getStatusColor(appointment.status) }}
+                          >
+                            {getInitials(appointment.clientName)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-gray-900 truncate">{appointment.clientName}</h3>
+                            <p className="text-sm text-gray-600 truncate">{appointment.service}</p>
+                          </div>
+                          <div className="text-sm text-gray-600 flex-shrink-0">
+                            <div className="font-semibold">{formatTime(appointment.startTime)}</div>
+                            <div className="text-xs">Duration: {Math.round((new Date(appointment.endTime).getTime() - new Date(appointment.startTime).getTime()) / 60000)}m</div>
+                          </div>
+                          <span
+                            className="px-3 py-1 rounded-full text-xs font-semibold text-white whitespace-nowrap flex-shrink-0"
+                            style={{ backgroundColor: getStatusColor(appointment.status) }}
+                          >
+                            {appointment.status}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </motion.div>
             </div>
           )}

@@ -20,7 +20,7 @@ import { ObjectId } from 'mongodb';
 export async function GET(req: NextRequest) {
   try {
     // Try to connect to database, but fallback gracefully if it fails
-    let appointments = [];
+    let appointments: any[] = [];
     
     try {
       const { searchParams } = new URL(req.url);
