@@ -1,8 +1,8 @@
-You are a privacy-aware web engineer. Implement the PIPEDA compliance items from `PIPEDA.md` for Lacque&Latte so the site is compliant out of the box, even if SendGrid/Twilio are NOT purchased yet.
+You are a privacy-aware web engineer. Implement the PIPEDA compliance items from `PIPEDA.md` for Lacque&Latte so the site is compliant out of the box, even if MailerSend/Twilio are NOT purchased yet.
 
 ### Input Spec
 - Use the content from the user-provided `PIPEDA.md`.
-- Tech stack: Next.js 14 (App Router), NextAuth + MongoDB Atlas (already scaffolded), SendGrid + Twilio (feature-flagged).
+- Tech stack: Next.js 14 (App Router), NextAuth + MongoDB Atlas (already scaffolded), MailerSend + Twilio (feature-flagged).
 
 ### Deliverables
 1) Add/Update files:
@@ -11,7 +11,7 @@ You are a privacy-aware web engineer. Implement the PIPEDA compliance items from
   - What data is collected
   - Why it’s collected
   - Where it’s stored (MongoDB Atlas)
-  - Third parties (Vercel, MongoDB Atlas, SendGrid, Twilio)
+  - Third parties (Vercel, MongoDB Atlas, MailerSend, Twilio)
   - Retention (2 years)
   - Rights: access, correction, deletion (how to contact)
   - Consent statement matching the booking/contact forms
@@ -31,7 +31,7 @@ You are a privacy-aware web engineer. Implement the PIPEDA compliance items from
 - `/src/app/api/email/templates.ts` – centralize email bodies for transactional vs promotional:
   - Transactional emails must NOT include marketing; include business name, address (placeholder), and privacy contact.
   - Promotional template contains explicit consent requirement and unsubscribe link placeholder.
-- `/src/app/api/email/unsubscribe/route.ts` – simple stub endpoint for unsubscribe actions (writes to a `suppressions` collection; SendGrid integration later).
+- `/src/app/api/email/unsubscribe/route.ts` – simple stub endpoint for unsubscribe actions (writes to a `suppressions` collection; MailerSend integration later).
 - `/src/app/api/sms/route.ts` – ensure all SMS include “Reply STOP to unsubscribe” and write STOP requests to `suppressions`.
 - Add a small `/src/app/(admin)/privacy-tools/page.tsx` page:
   - Buttons: “Export Client Data”, “Delete Client Data”
@@ -51,7 +51,7 @@ You are a privacy-aware web engineer. Implement the PIPEDA compliance items from
 - Contact/booking cannot submit unless consent is checked.
 - Admin can reach `/admin/privacy-tools` only when authenticated.
 - Export/Delete endpoints require admin and function in DRY-RUN if DB lacks records.
-- All email/SMS paths operate even when SendGrid/Twilio keys are absent (no crash; DRY-RUN true).
+- All email/SMS paths operate even when MailerSend/Twilio keys are absent (no crash; DRY-RUN true).
 
 Please implement now without inserting any real secrets or live provider code beyond feature-flagged stubs.
 
@@ -91,7 +91,7 @@ The policy should explain:
 - **Third-party service providers:**  
   - Vercel (hosting)  
   - MongoDB Atlas (database)  
-  - SendGrid (email delivery)  
+  - MailerSend (email delivery)  
   - Twilio (SMS notifications)  
 
 - **Data retention:**  
@@ -144,7 +144,7 @@ Because Lacque&latte sends appointment reminders and possibly promotions, compli
 | **Promotional (e.g., marketing offers)** | Express consent | Checkbox required |
 | **Opt-out** | Mandatory | "Unsubscribe" link or "Reply STOP" message |
 
-All SendGrid email templates and Twilio SMS messages must include a **clear unsubscribe method**.
+All MailerSend email templates and Twilio SMS messages must include a **clear unsubscribe method**.
 
 ---
 
@@ -169,7 +169,7 @@ All SendGrid email templates and Twilio SMS messages must include a **clear unsu
   - Maintain documentation of third-party service agreements.  
 
 - **Third-party contracts:**  
-  Ensure all vendors (Vercel, MongoDB, SendGrid, Twilio) have PIPEDA-aligned data protection agreements (DPAs).  
+  Ensure all vendors (Vercel, MongoDB, MailerSend, Twilio) have PIPEDA-aligned data protection agreements (DPAs).  
 
 ---
 

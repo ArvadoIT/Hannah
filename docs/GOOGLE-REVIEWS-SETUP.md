@@ -1,183 +1,124 @@
-# Google Reviews Setup Guide for Hannah's Nail Lounge
+# Google Reviews Setup Guide
 
-## ✅ What's Already Done
+## Overview
+Your website now includes a Google Reviews component that displays actual reviews from your Google Business Profile. This implementation fetches real reviews using the Google Places API.
 
-Your website now has a beautiful Google Reviews section with:
-- ⭐ Star rating display
-- 📝 Review cards with customer feedback
-- 🔗 "View All Reviews" button linked to your Google Business Profile: https://maps.app.goo.gl/j2kmTynEMoHZZSni7
+## Required Environment Variables
 
-## 🎯 Two Ways to Add Your Real Reviews
+Add these variables to your `.env.local` file:
 
-### **Option 1: Manual (Easy & Quick)** ⚡
+```bash
+# Google Places API Key
+GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
 
-Just replace the placeholder reviews with your real ones!
-
-**Step 1:** Go to your Google Business Profile on a computer
-- Open: https://maps.app.goo.gl/j2kmTynEMoHZZSni7
-- View all your reviews
-
-**Step 2:** Copy your favorite reviews
-
-**Step 3:** Open `index.html` and find the reviews section (around line 266)
-
-**Step 4:** Replace the review cards with your real reviews. Here's the template:
-
-```html
-<article class="review-card">
-    <div class="review-stars">
-        <span class="star filled">★</span>
-        <span class="star filled">★</span>
-        <span class="star filled">★</span>
-        <span class="star filled">★</span>
-        <span class="star filled">★</span>
-    </div>
-    <div class="review-content">
-        <p>Your customer's review text here</p>
-    </div>
-    <div class="review-author">
-        <h4>Customer Name</h4>
-        <span class="review-date">2 weeks ago</span>
-    </div>
-</article>
+# Google Place ID for your business
+NEXT_PUBLIC_GOOGLE_PLACE_ID=your_google_place_id_here
 ```
 
-**For 4-star reviews:** Remove one `<span class="star filled">★</span>` and add `<span class="star">★</span>`
+## Setup Instructions
 
-**Step 5:** Update your overall rating (line 251):
-```html
-<span class="rating-number">5.0</span>  <!-- Change to your actual rating -->
-```
-
----
-
-### **Option 2: Automatic with Google Places API** 🤖
-
-This fetches reviews automatically from Google!
-
-**Prerequisites:**
-- Google Cloud account (free tier available)
-- 15-20 minutes to set up
-
-**Step 1: Get Google Places API Key**
+### Step 1: Get Google Places API Key
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or select existing)
-3. Click "Enable APIs and Services"
-4. Search for "Places API" and enable it
-5. Go to "Credentials" → "Create Credentials" → "API Key"
-6. Copy your API key
+2. Create a new project or select an existing one
+3. Enable the **Places API**:
+   - Go to "APIs & Services" → "Library"
+   - Search for "Places API"
+   - Click "Enable"
+4. Create an API key:
+   - Go to "APIs & Services" → "Credentials"
+   - Click "Create Credentials" → "API Key"
+   - Copy the API key
 
-**Step 2: Find Your Place ID**
+### Step 2: Find Your Place ID
 
 1. Go to [Place ID Finder](https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder)
-2. Search for "Hannah's Nail Lounge"
+2. Search for "Hannah's Nail Lounge" or your business name
 3. Copy the Place ID (looks like: `ChIJN1t_tDeuEmsRUsoyG83frY4`)
 
-**Step 3: Configure the Script**
+### Step 3: Configure Environment Variables
 
-Open `google-reviews.js` and update:
+Create a `.env.local` file in your project root and add:
 
-```javascript
-const CONFIG = {
-    apiKey: 'YOUR_API_KEY_HERE',  // Paste your API key
-    placeId: 'YOUR_PLACE_ID_HERE',  // Paste your Place ID
-    maxReviews: 6  // Number of reviews to show
-};
+```bash
+GOOGLE_PLACES_API_KEY=your_actual_api_key_here
+NEXT_PUBLIC_GOOGLE_PLACE_ID=your_actual_place_id_here
 ```
 
-**Step 4: Add Script to Your Website**
+### Step 4: Test the Implementation
 
-Open `index.html` and add this line before the closing `</body>` tag:
+1. Start your development server: `npm run dev`
+2. Visit your homepage
+3. The Google Reviews section should load automatically
+4. Check the browser console for any errors
 
-```html
-<script src="google-reviews.js"></script>
+## Features
+
+- **Real Reviews**: Displays actual reviews from your Google Business Profile
+- **Responsive Design**: Works on all devices
+- **Loading States**: Shows loading spinner while fetching reviews
+- **Error Handling**: Graceful fallback if API fails
+- **Star Ratings**: Visual star display for each review
+- **Author Photos**: Shows reviewer profile pictures when available
+- **Clickable Links**: Links to reviewer profiles and all reviews
+
+## Customization
+
+### Change Number of Reviews
+Modify the `maxReviews` prop in the homepage:
+
+```tsx
+<GoogleReviews 
+  placeId={process.env.NEXT_PUBLIC_GOOGLE_PLACE_ID}
+  maxReviews={8} // Change this number
+  showAllReviewsLink={true}
+  allReviewsUrl="https://share.google/48XHuiGNWbG9DBURg"
+/>
 ```
 
-**Step 5: Test**
+### Customize Styling
+Edit `src/components/GoogleReviews.module.css` to modify:
+- Colors
+- Spacing
+- Card layouts
+- Star colors
+- Button styles
 
-Open your website - reviews should load automatically!
+## Troubleshooting
 
----
+### Reviews Not Loading
+1. Check browser console for errors
+2. Verify API key is correct
+3. Ensure Places API is enabled
+4. Check if Place ID is valid
+5. Verify environment variables are loaded
 
-## 🎨 Customization Options
+### API Quota Exceeded
+- Google Places API has usage limits
+- Check your Google Cloud Console for quota usage
+- Consider upgrading your API plan if needed
 
-### Change Number of Reviews Displayed
+### CORS Issues
+- The API route handles CORS automatically
+- If you encounter issues, check the API route configuration
 
-In `index.html`, add or remove review cards in the `testimonials-grid` div.
+## Security Notes
 
-### Change Star Color
+- Never expose your API key in client-side code
+- The API key is only used server-side in the API route
+- Consider restricting your API key to specific domains/IPs in Google Cloud Console
 
-In `styles.css`, find `.star.filled` (around line 1229) and change:
+## Cost Considerations
 
-```css
-.star.filled {
-    color: #fbbc04;  /* Change this hex color */
-}
-```
+- Google Places API has pricing based on usage
+- Review fetching is relatively low-cost
+- Monitor your usage in Google Cloud Console
+- Consider caching reviews to reduce API calls
 
-### Adjust Review Card Layout
+## Support
 
-In `styles.css`, find `.testimonials-grid` and modify:
-
-```css
-.testimonials-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;  /* Space between cards */
-}
-```
-
----
-
-## 📱 Where Reviews Appear
-
-The reviews section appears on your homepage (`index.html`) between the "About" section and the footer.
-
-To add reviews to other pages (Services, Portfolio):
-1. Copy the entire `<!-- Google Reviews Section -->` from `index.html`
-2. Paste it into the other HTML files where you want it
-3. The styling is already in `styles.css` so it will work automatically
-
----
-
-## 🔧 Troubleshooting
-
-### Reviews not loading with API?
-- Check browser console (F12) for errors
-- Verify API key is correct
-- Ensure Places API is enabled in Google Cloud Console
-- Check if you've exceeded free tier limits (unlikely for small sites)
-
-### Stars not showing?
-- Make sure you haven't accidentally deleted the star span elements
-- Check if CSS is loading properly
-
-### Layout looks broken?
-- Clear browser cache (Ctrl+Shift+R or Cmd+Shift+R)
-- Verify `styles.css` is linked in your HTML
-
----
-
-## 💡 Tips
-
-- **Best Practice:** Show your best 3-6 reviews on the homepage
-- **Keep Fresh:** Update reviews monthly if using manual method
-- **Respond to Reviews:** Always respond to Google reviews - it shows you care!
-- **Be Authentic:** Don't edit or modify the review text
-
----
-
-## 📞 Need Help?
-
-If you have questions or need assistance:
-1. Check the browser console for errors (F12 → Console tab)
-2. Verify all file paths are correct
-3. Make sure all quotes and brackets are properly closed in code
-
----
-
-**Current Status:**
-✅ Reviews section designed and styled
-✅ Google Business Profile linked
-⏳ Waiting for real reviews to be added (Option 1 or 2)
-
+If you encounter issues:
+1. Check the browser console for error messages
+2. Verify all environment variables are set correctly
+3. Test the API key with a simple request
+4. Check Google Cloud Console for API status and quotas

@@ -1,189 +1,359 @@
-# Documentation - Lacque & Latte
+# 💅 Lacque & Latte Nail Studio - Next.js Application
 
-This folder contains all technical documentation for the Lacque & Latte website project.
+Modern, secure, and scalable nail studio management system built with Next.js 14, MongoDB Atlas, and NextAuth.
 
----
+## 🚀 Features
 
-## 📚 Documentation Index
+- ✅ **Full-Stack TypeScript** - Type-safe frontend and backend
+- ✅ **MongoDB Integration** - Real database with connection pooling
+- ✅ **Authentication** - Secure admin/stylist login with NextAuth
+- ✅ **PIPEDA Compliant** - Canadian privacy law compliance
+- ✅ **Feature Flags** - Works without external APIs (dry-run mode)
+- ✅ **Email & SMS** - MailerSend and Twilio integration with opt-out
+- ✅ **API Routes** - RESTful API for appointments, contacts, SMS
+- ✅ **Responsive Design** - Mobile-first, accessible UI
+- ✅ **Security** - Environment variables, protected routes, input validation
 
-### Implementation & History
+## 📋 Prerequisites
 
-**[IMPLEMENTATION-HISTORY.md](./IMPLEMENTATION-HISTORY.md)**  
-Complete history of all implementation phases, refactorings, and improvements. Includes:
-- Phase 1: Code Cleanup & Refactoring (Oct 2025)
-- Phase 2: CSS Optimization (Oct 2025)
-- Bug Fixes & Improvements
-- Metrics & Impact Analysis
+- **Node.js** 18.0.0 or higher
+- **MongoDB Atlas** account (free tier works)
+- **(Optional)** MailerSend API token for email
+- **(Optional)** Twilio credentials for SMS
 
-- CSS and JavaScript implementation details
-- Testing procedures and results
-- Browser compatibility notes
+## 🛠️ Installation
 
----
+### 1. Install Dependencies
 
-### Testing
+```bash
+cd /path/to/project
+npm install
+```
 
-**[TESTING.md](./TESTING.md)**  
-Comprehensive E2E testing documentation. Includes:
-- Test suite overview and structure
-- Running tests (all modes)
-- Test coverage details (70+ tests)
-- Writing new tests guide
-- Debugging tips
-- CI/CD integration examples
+### 2. Set Up Environment Variables
 
-**Quick Start**: See [../QUICK-START-TESTING.md](../QUICK-START-TESTING.md) for 3-step setup
+```bash
+# Copy the example file
+cp .env.example .env.local
+```
 
----
+### 3. Configure `.env.local`
 
-### Admin & Features
+**Minimum required** (app will work with just these):
 
-**[ADMIN.md](./ADMIN.md)**  
-Admin dashboard documentation. Includes:
-- Access information and credentials
-- Security features
-- User accounts (master & stylists)
-- Dashboard features (schedule, analytics)
-- Technical implementation details
-- Customization options
+```env
+MONGODB_URI="mongodb+srv://Andrew:Zeus20230607@lacquelatte.7cwderu.mongodb.net/lacque-latte?retryWrites=true&w=majority&appName=LacqueLatte"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-here"
+```
 
-**[GOOGLE-REVIEWS-SETUP.md](./GOOGLE-REVIEWS-SETUP.md)**  
-Guide for adding Google Reviews to the website. Includes:
-- Manual setup (quick & easy)
-- Automatic setup with Google Places API
-- Customization options
-- Troubleshooting tips
+**Generate NEXTAUTH_SECRET:**
 
----
+```bash
+openssl rand -base64 32
+```
 
-### Architecture & Planning
+**Optional services** (leave blank for dry-run mode):
 
-**[ARCHITECTURE.md](./ARCHITECTURE.md)**  
-Technical architecture for future Next.js migration. Includes:
-- MongoDB Atlas + NextAuth setup
-- Database schema and models
-- API endpoints and authentication
-- SendGrid + Twilio integration
-- Feature flags for optional services
-- Cost breakdown and timeline
+```env
+# Email (optional - works without it)
+MAILERSEND_API_KEY="your-mailersend-token"
+MAILERSEND_FROM="noreply@lacqueandlatte.ca"
+MAILERSEND_FROM_NAME="Lacque & Latte"
+FEATURE_EMAIL_ENABLED="false"
 
-**[PIPEDA-COMPLIANCE.md](./PIPEDA-COMPLIANCE.md)**  
-PIPEDA compliance guide for Canadian privacy law. Includes:
-- Privacy policy requirements
-- Data security safeguards
-- User consent and control
-- Email/SMS compliance (CASL)
-- Data management and retention
-- Administrative measures
+# SMS (optional - works without it)
+TWILIO_ACCOUNT_SID="your-account-sid"
+TWILIO_AUTH_TOKEN="your-auth-token"
+TWILIO_PHONE_NUMBER="+1234567890"
+FEATURE_SMS_ENABLED="false"
+```
 
----
+### 4. Set Up Database
 
-## 📖 Quick Reference
+The application will automatically create collections. To create an initial admin user:
 
-| Need to... | See Document |
-|------------|--------------|
-| Understand what changed in each phase | [IMPLEMENTATION-HISTORY.md](./IMPLEMENTATION-HISTORY.md) |
-| Run tests | [TESTING.md](./TESTING.md) or [../QUICK-START-TESTING.md](../QUICK-START-TESTING.md) |
-| Access admin dashboard | [ADMIN.md](./ADMIN.md) |
-| Add Google Reviews | [GOOGLE-REVIEWS-SETUP.md](./GOOGLE-REVIEWS-SETUP.md) |
-| Plan Next.js migration | [ARCHITECTURE.md](./ARCHITECTURE.md) |
-| Ensure PIPEDA compliance | [PIPEDA-COMPLIANCE.md](./PIPEDA-COMPLIANCE.md) |
+```bash
+# Run the database setup script (create one or use MongoDB Compass)
+# Or manually insert an admin user into the 'users' collection:
+{
+  "email": "hannah@lacqueandlatte.ca",
+  "name": "Hannah",
+  "hashedPassword": "<bcrypt-hash-of-password>",
+  "role": "admin",
+  "createdAt": new Date(),
+  "updatedAt": new Date()
+}
+```
 
----
+**Hash a password with bcrypt:**
 
-## 🗂️ Documentation Organization
+```bash
+node
+> const bcrypt = require('bcryptjs');
+> bcrypt.hashSync('your-password', 10);
+```
 
-This documentation structure was created on **October 20, 2025** to consolidate and organize all project documentation.
+## 🏃 Running the Application
 
-### What Was Consolidated
+### Development Mode
 
-**Testing Documentation** (4 files → 1):
-- ✅ Merged: `E2E-README.md`, `TEST-SUITE-SUMMARY.md`, `test-findings-summary.md` → `TESTING.md`
-- ✅ Kept separate: `QUICK-START-TESTING.md` (root level for quick access)
+```bash
+npm run dev
+```
 
-**Implementation History** (5 files → 1):
-- ✅ Merged: `CoodeCleanUp.md`, `PHASE1-COMPLETE.md`, `PHASE2-CSS-OPTIMIZATION-SUMMARY.md`, `site-cleanup-report.md`, `services-portfolio-fixes.md` → `IMPLEMENTATION-HISTORY.md`
+Open [http://localhost:3000](http://localhost:3000)
 
+### Production Build
 
-**Admin & Setup Guides**:
-- ✅ Moved: `ADMIN_README.md` → `docs/ADMIN.md`
-- ✅ Moved: `GOOGLE_REVIEWS_SETUP.md` → `docs/GOOGLE-REVIEWS-SETUP.md`
+```bash
+npm run build
+npm start
+```
 
-**Architecture & Planning**:
-- ✅ Moved: `ARCHITECTURE.md` → `docs/ARCHITECTURE.md`
-- ✅ Moved: `PIPEDACompliance.md` → `docs/PIPEDA-COMPLIANCE.md`
+### Type Checking
 
-### Benefits
+```bash
+npm run type-check
+```
 
-**Before consolidation**:
-- ❌ 12 .md files scattered in root directory
-- ❌ Duplicate information across multiple files
-- ❌ Unclear which document to reference
-- ❌ Version conflicts between similar documents
+### Linting
 
-**After consolidation**:
-- ✅ 2 .md files in root (README.md + QUICK-START-TESTING.md)
-- ✅ 7 well-organized documents in docs/
-- ✅ No duplicate information
-- ✅ Clear single source of truth for each topic
-- ✅ Consistent naming convention (UPPERCASE-WITH-HYPHENS.md)
+```bash
+npm run lint
+```
 
----
+## 📁 Project Structure
 
-## 📝 Document Naming Convention
+```
 
-All documentation follows this naming pattern:
-- **UPPERCASE-WITH-HYPHENS.md** for main documents
-- Descriptive names that clearly indicate content
-- No abbreviations (e.g., `ADMIN.md` not `ADM.md`)
+├── src/
+│   ├── app/                    # Next.js 14 App Router
+│   │   ├── api/                # API routes
+│   │   │   ├── auth/          # NextAuth endpoints
+│   │   │   ├── contact/       # Contact form
+│   │   │   ├── appointments/  # Appointments CRUD
+│   │   │   ├── sms/           # SMS sending
+│   │   │   └── health/        # Health check
+│   │   ├── contact/           # Contact page
+│   │   ├── login/             # Login page
+│   │   ├── dashboard/         # Admin dashboard (protected)
+│   │   ├── privacy/           # Privacy policy
+│   │   ├── terms/             # Terms of service
+│   │   ├── layout.tsx         # Root layout
+│   │   ├── page.tsx           # Home page
+│   │   └── globals.css        # Global styles
+│   ├── auth/
+│   │   └── config.ts          # NextAuth configuration
+│   ├── lib/
+│   │   ├── db.ts              # MongoDB connection
+│   │   ├── email.ts           # MailerSend integration
+│   │   ├── sms.ts             # Twilio integration
+│   │   └── validators.ts      # Zod validation schemas
+│   ├── types/
+│   │   ├── database.ts        # Database type definitions
+│   │   └── next-auth.d.ts     # NextAuth type extensions
+│   └── middleware.ts          # Route protection
+├── .env.example               # Environment variables template
+├── .gitignore                 # Git ignore (includes .env.local)
+├── next.config.js             # Next.js configuration
+├── package.json               # Dependencies
+├── tsconfig.json              # TypeScript configuration
+├── SECURITY.md                # Security guide
+└── README.md                  # This file
+```
 
----
+## 🔒 Security
 
-## 🔄 Maintenance
+### Environment Variables
 
-### Updating Documentation
+**Never commit `.env.local` to git!** It's in `.gitignore` by default.
 
-When making changes to the website:
+- `.env.example` - Template (no real values) ✅ Safe to commit
+- `.env.local` - Your actual secrets ❌ Never commit
 
-1. **Bug fixes**: Update `IMPLEMENTATION-HISTORY.md` with details
-2. **New features**: Add to relevant document (ADMIN, ARCHITECTURE, etc.)
-3. **Test changes**: Update `TESTING.md` with new test coverage
-4. **Configuration changes**: Update relevant setup guides
+See [SECURITY.md](./SECURITY.md) for detailed security guidelines.
 
-### Adding New Documentation
+### API Key Management
 
-If creating new documentation:
+1. **Local Development:** Store in `.env.local`
+2. **Production (Vercel):** Add in Vercel dashboard under Environment Variables
+3. **Different Secrets:** Use different `NEXTAUTH_SECRET` for prod vs dev
 
-1. Place in `docs/` folder
-2. Follow naming convention: `DESCRIPTIVE-NAME.md`
-3. Add entry to this README index
-4. Reference from root README if appropriate
+### Feature Flags (Dry-Run Mode)
 
----
+The app works **without** external API keys using dry-run mode:
 
-## 🎯 Documentation Standards
+```env
+FEATURE_EMAIL_ENABLED="false"  # Emails logged, not sent
+FEATURE_SMS_ENABLED="false"    # SMS logged, not sent
+```
 
-All documentation should:
-- ✅ Be written in clear, concise English
-- ✅ Include code examples where relevant
-- ✅ Have a table of contents for long documents
-- ✅ Use markdown formatting consistently
-- ✅ Include dates and status indicators
-- ✅ Provide troubleshooting sections where applicable
-- ✅ Link to related documents
+This allows you to:
+- Develop locally without costs
+- Test functionality without real services
+- Deploy immediately and add services later
 
----
+## 📡 API Endpoints
 
-## 📞 Questions?
+### Public Endpoints
 
-If you can't find what you're looking for:
+- `POST /api/contact` - Submit contact form
+- `POST /api/appointments` - Create appointment (public booking)
 
-1. Check the [main project README](../README.md)
-2. Search this folder for keywords
-3. Contact the development team
+### Protected Endpoints (Require Authentication)
 
----
+- `GET /api/appointments` - List appointments
+- `PATCH /api/appointments` - Update appointment
+- `DELETE /api/appointments?id=<id>` - Cancel appointment
+- `POST /api/sms` - Send SMS reminder
 
-**Last Updated**: October 2025  
-**Maintained By**: Arvado IT Solutions
+### Health Check
+
+- `GET /api/health` - Check database connectivity and service status
+
+## 🧪 Testing
+
+### Test API Endpoints
+
+```bash
+# Health check
+curl http://localhost:3000/api/health
+
+# Contact form (should work in dry-run mode)
+curl -X POST http://localhost:3000/api/contact \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test User",
+    "email": "test@example.com",
+    "message": "Test message",
+    "consentAccepted": true
+  }'
+```
+
+## 🚢 Deployment to Vercel
+
+### 1. Push to GitHub
+
+```bash
+git add .
+git commit -m "Initial Next.js setup"
+git push origin main
+```
+
+### 2. Import to Vercel
+
+1. Go to [vercel.com](https://vercel.com)
+2. Click "New Project"
+3. Import your GitHub repository
+4. Set root directory to `next-app`
+
+### 3. Configure Environment Variables
+
+In Vercel Project Settings > Environment Variables, add:
+
+**Required:**
+- `MONGODB_URI` - Your MongoDB connection string
+- `NEXTAUTH_URL` - Your production domain (e.g., `https://lacqueandlatte.ca`)
+- `NEXTAUTH_SECRET` - Generate a new one for production
+
+**Optional:**
+- `MAILERSEND_API_KEY`
+- `FEATURE_EMAIL_ENABLED="true"`
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_PHONE_NUMBER`
+- `FEATURE_SMS_ENABLED="true"`
+
+### 4. Deploy
+
+Vercel will automatically deploy when you push to `main`.
+
+## 🗄️ Database Schema
+
+### Collections
+
+#### `users`
+```typescript
+{
+  _id: ObjectId,
+  email: string,
+  name: string,
+  hashedPassword: string,
+  role: 'admin' | 'stylist' | 'client',
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### `appointments`
+```typescript
+{
+  _id: ObjectId,
+  clientName: string,
+  clientEmail: string,
+  clientPhone: string?,
+  service: string,
+  stylist: string?,
+  startTime: Date,
+  endTime: Date,
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled',
+  notes: string?,
+  consentAccepted: boolean,
+  consentDate: Date,
+  reminderSent: boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### `messages`
+```typescript
+{
+  _id: ObjectId,
+  name: string,
+  email: string,
+  phone: string?,
+  message: string,
+  consentAccepted: boolean,
+  consentDate: Date,
+  status: 'new' | 'read' | 'responded' | 'archived',
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+## 🎨 Customization
+
+### Branding
+
+Edit environment variables:
+```env
+LEGAL_BUSINESS_NAME="Your Business Name"
+LEGAL_PRIVACY_CONTACT_EMAIL="privacy@yourdomain.com"
+```
+
+### Styling
+
+Global styles in `src/app/globals.css` - update CSS variables:
+```css
+:root {
+  --primary-color: #e4b4c2;  /* Change to your brand color */
+  --secondary-color: #1a1a1a;
+  /* ... */
+}
+```
+
+## 📞 Support
+
+For questions or issues:
+
+- **Email:** dev@arvado.ca
+- **Documentation:** See `docs/` folder in parent directory
+- **Security Issues:** See [SECURITY.md](./SECURITY.md)
+
+## 📄 License
+
+© 2025 Lacque & Latte Nail Studio. All rights reserved.  
+Developed by Arvado IT Solutions.
 

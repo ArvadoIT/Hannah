@@ -1,332 +1,364 @@
-# E2E Test Suite - Lacque & Latte
+# Testing Guide - Next.js App
 
-> **Quick Start**: See [QUICK-START-TESTING.md](../QUICK-START-TESTING.md) for 3-step setup
-
----
+This guide covers the comprehensive testing suite for the Lacque & Latte Nail Studio Next.js application, with a focus on performance monitoring, console log tracking, and ensuring smooth operation.
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
+- [Test Types](#test-types)
+- [Getting Started](#getting-started)
 - [Running Tests](#running-tests)
 - [Test Structure](#test-structure)
-- [Test Coverage](#test-coverage)
+- [Performance Testing](#performance-testing)
+- [Console Monitoring](#console-monitoring)
 - [Writing New Tests](#writing-new-tests)
-- [Debugging](#debugging)
 - [CI/CD Integration](#cicd-integration)
-- [Test Findings & History](#test-findings--history)
-
----
 
 ## Overview
 
-Comprehensive end-to-end test suite for the Lacque & Latte website, built with Playwright and TypeScript.
+Our testing suite focuses on three key areas:
 
-### Key Features
+1. **Performance Monitoring** - Ensures the app loads quickly and runs efficiently
+2. **Console Log Tracking** - Catches errors, warnings, and unnecessary logs
+3. **Smooth Operation** - Validates user experience is seamless and responsive
 
-- **Modular Page Objects**: Reusable page object models for all major pages
-- **Stable Tests**: No arbitrary timeouts; uses proper waits for element state and visibility
-- **Cross-Browser**: Configured for Chromium desktop and mobile (with optional Firefox/WebKit)
-- **Console Error Detection**: Asserts zero console errors on key pages
-- **Visual Regression**: Tests for background colors and visual consistency
+All tests are built using **Playwright** for reliable, cross-browser testing.
 
-### Test Coverage Summary
+## Test Types
 
-| Category | Tests | Key Assertions |
-|----------|-------|----------------|
-| Global | 8+ | Navigation, footer, console errors |
-| Home | 10+ | Images, content, navigation |
-| Booking | 15+ | Happy path, validation, mobile |
-| Portfolio | 8+ | Filters, transitions, images |
-| Admin | 10+ | Auth, hamburger menu, accessibility |
-| Calendar | 8+ | Navigation, date selection |
-| Responsive | 10+ | Mobile/desktop smoke tests |
-| **Total** | **70+** | **All critical user flows covered** |
+### Performance Tests (`tests/specs/performance/`)
+- Page load times (DOM Content Loaded, Load Complete)
+- Core Web Vitals (LCP, FID, CLS, TTFB)
+- Resource optimization (bundle sizes, request counts)
+- Memory usage and leak detection
+- API response times
+- Page transition speeds
 
----
+### Console Monitoring Tests (`tests/specs/console/`)
+- Console errors detection
+- Console warnings tracking
+- React/Next.js specific errors (hydration, warnings)
+- Error recovery and graceful handling
+- Production-ready console cleanliness
 
-## Prerequisites
+### Smooth Operation Tests (`tests/specs/console/smooth-operation.spec.ts`)
+- Layout shift prevention
+- Smooth scrolling and animations
+- Interactive responsiveness
+- Loading states
+- Hover and focus states
+- Form interactions
+- Mobile touch interactions
 
-- **Node.js**: v16 or higher
-- **npm**: v7 or higher  
-- **Python 3**: For running the local dev server (optional)
+## Getting Started
 
----
+### Prerequisites
 
-## Installation
+- Node.js 18+ installed
+- Next.js app dependencies installed
+- Playwright installed
+
+### Installation
 
 ```bash
-# 1. Install dependencies
+cd /path/to/project
+
+# Install dependencies
 npm install
 
-# 2. Install Playwright browsers (all)
-npx playwright install
-
-# 3. Install Chromium only (for faster CI)
-npx playwright install chromium
+# Install Playwright browsers
+npx playwright install chromium firefox webkit
 ```
-
----
 
 ## Running Tests
 
-### Quick Commands
+### Basic Commands
 
 ```bash
 # Run all tests
-npm test
+npm run test:e2e
 
-# Interactive UI mode (recommended for development)
-npm run test:ui
+# Run tests with UI (interactive mode)
+npm run test:e2e:ui
 
-# Run with browser visible
-npm run test:headed
+# Run tests in headed mode (see browser)
+npm run test:e2e:headed
 
-# Debug mode (step through tests)
-npm run test:debug
+# Debug tests
+npm run test:e2e:debug
 
-# View HTML report
+# Run only performance tests
+npm run test:performance
+
+# Run only console monitoring tests
+npm run test:console
+
+# View last test report
 npm run test:report
 ```
 
-### Run Specific Tests
+### Advanced Options
 
 ```bash
-# Specific test file
-npx playwright test tests/specs/home/images-and-content.spec.ts
+# Run specific test file
+npx playwright test tests/specs/performance/page-performance.spec.ts
 
-# Specific test suite
-npx playwright test tests/specs/home/
-
-# Specific browser
+# Run tests on specific browser
 npx playwright test --project=chromium-desktop
+
+# Run tests on mobile
 npx playwright test --project=chromium-mobile
 
-# Tests with specific tag
-npx playwright test --grep @smoke
+# Run with verbose output
+npx playwright test --reporter=line
 
-# Run in parallel
+# Run tests in parallel
 npx playwright test --workers=4
 ```
-
----
 
 ## Test Structure
 
 ```
-tests/
-├── fixtures/
-│   └── console-capture.ts      # Fixture for capturing console messages
-├── pages/
-│   ├── BasePage.ts             # Base page object with common elements
-│   ├── HomePage.ts             # Home page object
-│   ├── ServicesPage.ts         # Services/booking page object
-│   ├── PortfolioPage.ts        # Portfolio page object
-│   ├── AdminPage.ts            # Admin page object
-│   └── CalendarPage.ts         # Calendar page object
-├── specs/
-│   ├── global/
-│   │   ├── navigation.spec.ts  # Global navigation tests
-│   │   └── console-errors.spec.ts  # Console error tests
-│   ├── home/
-│   │   └── images-and-content.spec.ts  # Home page content tests
-│   ├── booking/
-│   │   ├── booking-happy-path.spec.ts  # Booking flow tests
-│   │   └── form-validation.spec.ts     # Form validation tests
-│   ├── portfolio/
-│   │   └── filters.spec.ts     # Portfolio filter tests
-│   ├── admin/
-│   │   ├── admin-auth.spec.ts  # Admin authentication tests
-│   │   └── admin-menu.spec.ts  # Admin menu tests
-│   ├── calendar/
-│   │   └── calendar-navigation.spec.ts  # Calendar tests
-│   └── responsive/
-│       └── mobile-smoke.spec.ts  # Responsive smoke tests
-└── utils/
-    ├── assertions.ts           # Custom assertion helpers
-    ├── test-data.ts            # Test data and fixtures
-    └── wait-helpers.ts         # Wait utility functions
+
+├── playwright.config.ts          # Playwright configuration
+├── tests/
+│   ├── fixtures/
+│   │   └── performance-monitor.ts    # Performance & console capture fixtures
+│   ├── utils/
+│   │   └── performance-assertions.ts  # Custom assertion helpers
+│   ├── pages/
+│   │   ├── BasePage.ts              # Base page object
+│   │   ├── HomePage.ts              # Home page object
+│   │   ├── ServicesPage.ts          # Services page object
+│   │   ├── PortfolioPage.ts         # Portfolio page object
+│   │   ├── CalendarPage.ts          # Calendar page object
+│   │   └── AdminPage.ts             # Admin page object
+│   └── specs/
+│       ├── performance/
+│       │   └── page-performance.spec.ts
+│       └── console/
+│           ├── console-monitoring.spec.ts
+│           └── smooth-operation.spec.ts
 ```
 
----
+## Performance Testing
 
-## Test Coverage
+### What We Measure
 
-### Global Tests
-- ✅ Navigation between all pages (desktop & mobile)
-- ✅ Mobile menu functionality (open/close/outside click)
-- ✅ Footer presence on all pages
-- ✅ Zero console errors on all pages
-- ✅ Accessibility features (skip links, ARIA labels)
+#### Navigation Timing
+- **DOM Content Loaded** - When HTML is parsed (threshold: < 2000ms)
+- **Load Complete** - When all resources loaded (threshold: < 3000ms)
+- **TTFB** - Time to First Byte (threshold: < 800ms)
 
-### Home Page Tests
-- ✅ Hero background image loads
-- ✅ About section image loads
-- ✅ Correct background color (#faf8f5)
-- ✅ Review cards display
-- ✅ All content sections visible
+#### Core Web Vitals
+- **LCP** (Largest Contentful Paint) - Main content visible (Good: < 2.5s)
+- **FID** (First Input Delay) - Time to interactive (Good: < 100ms)
+- **CLS** (Cumulative Layout Shift) - Visual stability (Good: < 0.1)
+- **FCP** (First Contentful Paint) - First paint (Good: < 1.8s)
 
-### Booking Flow Tests
-- ✅ Complete booking end-to-end
-- ✅ Service selection
-- ✅ Contact form display
-- ✅ Form validation (name, email, phone)
-- ✅ Error display and clearing
-- ✅ Mobile booking flow
-- ✅ Form submission
+#### Resource Metrics
+- Total number of requests (threshold: < 50)
+- Failed requests (threshold: 0)
+- Total resource size (threshold: < 3MB)
+- Image optimization
+- Script and CSS bundle sizes
 
-### Portfolio Tests
-- ✅ Portfolio items display
-- ✅ Filter buttons functionality
-- ✅ Active filter state
-- ✅ Smooth transitions (animation-aware)
-- ✅ Image loading
-- ✅ Mobile responsive filtering
+#### Memory
+- JS Heap Size (threshold: < 50MB)
+- Memory leak detection across navigations
 
-### Admin Tests
-- ✅ Login screen display
-- ✅ Authentication (valid/invalid)
-- ✅ Session redirect
-- ✅ Hamburger menu clickable
-- ✅ Mobile menu open/close
-- ✅ Menu close via button, overlay, Escape key
-- ✅ Body scroll lock when menu open
-- ✅ Focus management
+### Example Performance Test
 
-### Calendar Tests
-- ✅ Calendar display
-- ✅ Previous/next month navigation
-- ✅ Today highlighting
-- ✅ Date selection
-- ✅ Calendar grid updates
-- ✅ Mobile responsive calendar
+```typescript
+test('Home page should load quickly', async ({ 
+  page, 
+  capturePerformance 
+}) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  
+  const metrics = await capturePerformance();
+  
+  // Assert performance meets thresholds
+  await expectGoodPerformance(metrics);
+  
+  console.log(`DOM Content Loaded: ${metrics.domContentLoaded}ms`);
+  console.log(`Load Complete: ${metrics.loadComplete}ms`);
+});
+```
 
-### Responsive Tests
-- ✅ Mobile page loads
-- ✅ Touch target sizes (44x44 minimum)
-- ✅ Readable text (16px minimum)
-- ✅ No horizontal scroll
-- ✅ Viewport meta tag
-- ✅ Desktop smoke tests
+### Performance Thresholds
 
----
+You can customize thresholds in your tests:
+
+```typescript
+await expectGoodPerformance(metrics, {
+  domContentLoaded: 3000,  // Custom threshold
+  loadComplete: 5000,
+  maxImageSize: 2 * 1024 * 1024, // 2MB
+});
+```
+
+## Console Monitoring
+
+### What We Track
+
+1. **Console Errors** - Any `console.error()` or JavaScript errors
+2. **Console Warnings** - Any `console.warn()` calls
+3. **Page Errors** - Unhandled exceptions
+4. **Network Errors** - Failed requests
+5. **React Warnings** - Key props, hooks, hydration issues
+6. **Next.js Errors** - Hydration mismatches, build warnings
+
+### Console Tests
+
+```typescript
+test('Should have no console errors', async ({ 
+  page, 
+  consoleMessages 
+}) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  
+  // Check for errors (with allowed patterns)
+  await expectNoConsoleErrors(consoleMessages, [
+    /favicon\.ico/,
+    /GA_MEASUREMENT_ID/,
+  ]);
+});
+```
+
+### Allowed Patterns
+
+Some console messages are benign and can be ignored:
+
+```typescript
+const allowedPatterns = [
+  /favicon\.ico/,           // Favicon 404s are common
+  /GA_MEASUREMENT_ID/,      // Google Analytics placeholder
+  /google-analytics/,       // Analytics loading
+  /Fast Refresh/,           // Next.js dev mode
+  /Download the React DevTools/, // React dev suggestion
+];
+```
+
+## Smooth Operation Testing
+
+### Layout Stability
+
+Tests ensure no unexpected layout shifts (CLS):
+
+```typescript
+test('Scrolling should be smooth without layout shifts', async ({ 
+  page,
+  capturePerformance 
+}) => {
+  await page.goto('/');
+  
+  // Scroll through page
+  for (let i = 0; i < 5; i++) {
+    await page.evaluate(() => {
+      window.scrollBy({ top: window.innerHeight / 2 });
+    });
+    await page.waitForTimeout(300);
+  }
+  
+  const metrics = await capturePerformance();
+  
+  // CLS should be minimal
+  expect(metrics.cls).toBeLessThan(0.25);
+});
+```
+
+### Animation Performance
+
+Tests verify smooth 60fps animations:
+
+```typescript
+test('Animations should be smooth (60fps)', async ({ page }) => {
+  await page.goto('/');
+  
+  const frameRate = await page.evaluate(() => {
+    return new Promise((resolve) => {
+      let frames = 0;
+      const duration = 2000;
+      const startTime = performance.now();
+      
+      function measureFrame(currentTime) {
+        frames++;
+        if (currentTime - startTime < duration) {
+          requestAnimationFrame(measureFrame);
+        } else {
+          resolve((frames / duration) * 1000);
+        }
+      }
+      
+      requestAnimationFrame(measureFrame);
+    });
+  });
+  
+  expect(frameRate).toBeGreaterThan(50); // Close to 60fps
+});
+```
+
+### Interaction Testing
+
+Tests ensure UI remains responsive:
+
+- Click responsiveness
+- Hover states
+- Focus visibility
+- Form input smoothness
+- Rapid interaction handling
 
 ## Writing New Tests
 
-### 1. Create Page Object (if needed)
+### Using Performance Fixtures
 
 ```typescript
-// tests/pages/NewPage.ts
+import { test, expect } from '../../fixtures/performance-monitor';
+import { expectGoodPerformance } from '../../utils/performance-assertions';
+
+test('Your test name', async ({ 
+  page,
+  consoleMessages,      // Array of all console messages
+  networkRequests,      // Array of all network requests
+  capturePerformance,   // Function to capture metrics
+  getWebVitals         // Function to get Core Web Vitals
+}) => {
+  // Your test code
+});
+```
+
+### Creating Page Objects
+
+```typescript
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-export class NewPage extends BasePage {
-  readonly someElement: Locator;
+export class YourPage extends BasePage {
+  readonly yourElement: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.someElement = page.locator('.some-class');
+    this.yourElement = page.locator('.your-selector');
   }
 
   async goto(): Promise<void> {
-    await super.goto('/new-page.html');
-  }
-
-  async doSomething(): Promise<void> {
-    await this.someElement.click();
+    await super.goto('/your-path');
   }
 }
 ```
 
-### 2. Create Test Spec
-
-```typescript
-// tests/specs/feature/new-feature.spec.ts
-import { test, expect } from '../../fixtures/console-capture';
-import { NewPage } from '../../pages/NewPage';
-
-test.describe('New Feature', () => {
-  test('should do something', async ({ page }) => {
-    const newPage = new NewPage(page);
-    await newPage.goto();
-
-    await newPage.doSomething();
-    await expect(newPage.someElement).toBeVisible();
-  });
-});
-```
-
 ### Best Practices
 
-1. **Use Page Objects**: Encapsulate page-specific logic
-2. **Avoid Arbitrary Timeouts**: Use `waitFor` with state/visibility checks
-3. **Use Semantic Locators**: Prefer `getByRole`, `getByText`, `getByLabel`
-4. **Check Console Errors**: Use the `consoleMessages` fixture
-5. **Test User Flows**: Test complete journeys, not just individual actions
-6. **Mobile First**: Test on both desktop and mobile viewports
-
----
-
-## Debugging
-
-### Debug Mode
-
-```bash
-# Run all tests in debug mode
-npm run test:debug
-
-# Run specific test in debug mode
-npx playwright test tests/specs/home/images-and-content.spec.ts --debug
-```
-
-This will:
-- Open Playwright Inspector
-- Pause execution at each action
-- Allow you to step through tests
-
-### Use `page.pause()`
-
-```typescript
-test('debug test', async ({ page }) => {
-  await page.goto('/');
-  await page.pause(); // Execution pauses here
-  await page.click('button');
-});
-```
-
-### View Trace
-
-```bash
-npx playwright show-trace trace.zip
-```
-
-### Common Issues
-
-**Tests are flaky:**
-- Check for race conditions
-- Add proper waits for element state
-- Avoid using `waitForTimeout`
-- Use `waitForLoadState` appropriately
-
-**Tests fail in CI but pass locally:**
-- Check environment differences
-- Verify base URL is correct
-- Ensure CI has proper dependencies installed
-- Check for timing issues (use retries)
-
-**Elements not found:**
-- Check if element is in viewport
-- Verify selector is correct
-- Wait for element to be attached/visible
-- Check if element is in shadow DOM or iframe
-
-**Slow tests:**
-- Run tests in parallel
-- Reduce unnecessary waits
-- Use `page.goto` with `waitUntil: 'domcontentloaded'` when appropriate
-
----
+1. **Use Page Objects** - Keep tests maintainable
+2. **Wait for networkidle** - Ensure page is fully loaded
+3. **Add meaningful assertions** - Test actual user impact
+4. **Use custom thresholds** - Adjust for page complexity
+5. **Log performance data** - Help debugging and monitoring
+6. **Handle mobile** - Test responsive behavior
+7. **Test error recovery** - Ensure graceful handling
 
 ## CI/CD Integration
 
@@ -342,157 +374,132 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: '18'
-          
+      
       - name: Install dependencies
-        run: npm ci
-        
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-        
-      - name: Run E2E tests
-        run: npm test
+        run: |
+          cd /path/to/project
+          npm ci
+      
+      - name: Install Playwright
+        run: |
+          cd /path/to/project
+          npx playwright install --with-deps chromium
+      
+      - name: Run tests
+        run: |
+          cd /path/to/project
+          npm run test:e2e
         env:
           CI: true
-          E2E_BASE_URL: http://localhost:8000
-          
-      - name: Upload test results
+      
+      - uses: actions/upload-artifact@v3
         if: always()
-        uses: actions/upload-artifact@v3
         with:
           name: playwright-report
           path: playwright-report/
-          
-      - name: Upload test videos
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-videos
-          path: test-results/
 ```
 
 ### Environment Variables
 
-**`E2E_BASE_URL`**  
-Base URL for the application under test.  
-**Default**: `http://localhost:8000`
+```bash
+# Set base URL for tests
+export E2E_BASE_URL=https://staging.yourdomain.com
+
+# Run tests
+npm run test:e2e
+```
+
+## Performance Metrics Reference
+
+### Good Performance Targets
+
+| Metric | Good | Needs Improvement | Poor |
+|--------|------|-------------------|------|
+| **LCP** | < 2.5s | 2.5s - 4.0s | > 4.0s |
+| **FID** | < 100ms | 100ms - 300ms | > 300ms |
+| **CLS** | < 0.1 | 0.1 - 0.25 | > 0.25 |
+| **TTFB** | < 800ms | 800ms - 1800ms | > 1800ms |
+| **FCP** | < 1.8s | 1.8s - 3.0s | > 3.0s |
+
+### Resource Budgets
+
+- **Total Page Size**: < 3MB
+- **Images**: < 1MB total
+- **JavaScript**: < 1MB total
+- **CSS**: < 200KB
+- **Total Requests**: < 50
+- **Failed Requests**: 0
+
+## Troubleshooting
+
+### Tests Timing Out
 
 ```bash
-E2E_BASE_URL=https://staging.example.com npm test
+# Increase timeout in playwright.config.ts
+timeout: 60 * 1000, // 60 seconds
 ```
 
-**`CI`**  
-Set to `true` when running in CI environment.
-
-**Effects**:
-- Enables retries (2 retries in CI, 0 locally)
-- Disables parallel execution in CI
-- Prevents `test.only` from being accidentally committed
-
----
-
-## Test Findings & History
-
-
----
-
-## Reports and Artifacts
-
-### HTML Report
-
-After running tests:
+### Browser Not Found
 
 ```bash
-npx playwright show-report
+# Reinstall browsers
+npx playwright install --with-deps
 ```
 
-The report includes:
-- Test results with pass/fail status
-- Screenshots on failure
-- Videos on failure
-- Execution times
+### Performance Tests Failing
 
-### JUnit Report
+1. Check if dev server is running
+2. Verify network connection
+3. Check system resources
+4. Adjust thresholds if needed for CI environment
 
-JUnit XML report generated at `test-results/junit.xml` for CI integration.
+### Console Errors in Dev Mode
 
-### Artifacts
+Some errors are expected in development:
+- Next.js Fast Refresh messages
+- React DevTools suggestions
+- Source map warnings
 
-- **Screenshots**: Captured on failure
-- **Videos**: Recorded on failure
-- **Traces**: Captured on first retry
-- **Console Logs**: Available in HTML report
+Use `allowedPatterns` to filter these out.
 
-```
-test-results/
-├── [test-name]/
-│   ├── test-failed-1.png
-│   ├── video.webm
-│   └── trace.zip
-playwright-report/
-└── index.html
-```
+## Monitoring in Production
 
----
+### Continuous Monitoring
 
-## Maintenance
+Consider running these tests:
+- After each deployment
+- On a schedule (daily/weekly)
+- Against production (read-only tests)
 
-### Updating Playwright
+### Performance Budgets
 
-```bash
-npm install @playwright/test@latest
-npx playwright install
-```
+Set up alerts when:
+- Page load times exceed thresholds
+- Bundle sizes increase significantly
+- Console errors appear
+- Core Web Vitals degrade
 
-### Updating Test Data
+## Additional Resources
 
-Edit `tests/utils/test-data.ts` to update test fixtures.
+- [Playwright Documentation](https://playwright.dev/)
+- [Core Web Vitals](https://web.dev/vitals/)
+- [Next.js Performance](https://nextjs.org/docs/advanced-features/measuring-performance)
+- [Web Performance APIs](https://developer.mozilla.org/en-US/docs/Web/API/Performance)
 
-### Adding New Page Objects
+## Support
 
-1. Create new file in `tests/pages/`
-2. Extend `BasePage` if it's a main page
-3. Export the class
-4. Use in test specs
-
----
-
-## Browser Compatibility
-
-Tested and compatible with:
-- Chrome/Chromium (latest) ✅
-- Firefox (latest) ✅
-- Safari (latest) ✅
-- Edge (latest) ✅
-- iOS Safari (latest) ✅
-- Chrome Mobile (latest) ✅
-
----
-
-## Success Criteria
-
-- ✅ Baseline E2E coverage for all key pages and features
-- ✅ Tests are stable (no arbitrary timeouts, proper waits)
-- ✅ Tests are fast (parallel execution, optimized waits)
-- ✅ Tests are organized by page & feature
-- ✅ Zero console errors assertion on key pages
-- ✅ Cross-browser smoke tests
-- ✅ No changes to site visuals or DOM
-- ✅ Comprehensive documentation
-- ✅ CI-ready configuration
-
----
-
-**Questions or Issues?**
-
-If you encounter issues or have questions, please contact the development team or create an issue in the repository.
+For questions or issues:
+1. Check test output and reports
+2. Review Playwright traces
+3. Check console logs
+4. Verify test assertions and thresholds
 
 ---
 
 **Last Updated**: October 2025  
-**Status**: ✅ Complete and Production-Ready
+**Test Framework**: Playwright 1.40+  
+**Next.js Version**: 14.2+
 

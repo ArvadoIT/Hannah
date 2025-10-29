@@ -9,9 +9,9 @@ You are an expert Next.js 14 (App Router) engineer working in a monorepo. Implem
   
 - Auth: Auth.js (NextAuth) + MongoDB Adapter
 - Hosting: Vercel
-- Email: SendGrid (but must run without a key via DRY-RUN mode)
+- Email: MailerSend (but must run without a key via DRY-RUN mode)
 - SMS: Twilio (but must run without a key via DRY-RUN mode)
-- Contact form: handled in-house via SendGrid Mail Send API (no Web3Forms)
+- Contact form: handled in-house via MailerSend API (no Web3Forms)
 - Public website + Private admin dashboard in the same Next.js app (separate routes)
 
 ### Deliverables
@@ -21,9 +21,10 @@ You are an expert Next.js 14 (App Router) engineer working in a monorepo. Implem
   - MONGODB_URI="mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority"
   - NEXTAUTH_URL="https://<your-domain>"
   - NEXTAUTH_SECRET="<generate>"
-  - SENDGRID_API_KEY="<optional-set-later>"
-  - SENDGRID_FROM="noreply@lacqueandlatte.ca"
-  - SENDGRID_TO="info@lacqueandlatte.ca"
+  - MAILERSEND_API_KEY="<optional-set-later>"
+  - MAILERSEND_FROM="noreply@lacqueandlatte.ca"
+  - MAILERSEND_FROM_NAME="Lacque & Latte"
+  - MAILERSEND_TO="info@lacqueandlatte.ca"
   - TWILIO_ACCOUNT_SID="<optional-set-later>"
   - TWILIO_AUTH_TOKEN="<optional-set-later>"
   - TWILIO_MESSAGING_SERVICE_SID="<optional-set-later>"
@@ -41,7 +42,7 @@ You are an expert Next.js 14 (App Router) engineer working in a monorepo. Implem
 - `/src/app/api/contact/route.ts` – POST endpoint:
   - Validates body; rejects if consent not checked and FEATURE_CONSENT_REQUIRED=true
   - If FEATURE_EMAIL_ENABLED=false → respond 200 with `{dryRun:true}`
-  - If SENDGRID_API_KEY present and feature enabled → send email via SendGrid Mail Send API
+  - If MAILERSEND_API_KEY present and feature enabled → send email via MailerSend API
   - Minimal PII in the email body (name + contact + short message)
   - Return {ok:true}
 - `/src/app/(admin)/dashboard/page.tsx` – protected page (requires Auth). Show mock widgets: Today’s Appointments, Upcoming, and a stub for “Export My Data” and “Delete My Data”.
@@ -67,7 +68,7 @@ You are an expert Next.js 14 (App Router) engineer working in a monorepo. Implem
   - auth protection on /dashboard
 
 4) Feature flags behavior (must work NOW without buying APIs):
-- If `FEATURE_EMAIL_ENABLED=false` or `SENDGRID_API_KEY` missing → contact API returns `{dryRun:true}` and logs a friendly message.
+- If `FEATURE_EMAIL_ENABLED=false` or `MAILERSEND_API_KEY` missing → contact API returns `{dryRun:true}` and logs a friendly message.
 - If `FEATURE_SMS_ENABLED=false` or Twilio keys missing → SMS API returns `{dryRun:true}`.
 - App should deploy and run fully with only `MONGODB_URI`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`.
 
@@ -108,7 +109,7 @@ _All costs in CAD_
 ### **Auth.js (NextAuth) + MongoDB Adapter**
 - **Purpose:** Admin login and secure session management  
 - **Highlights:**  
-  - Email / Password or Magic-Link login via SendGrid  
+  - Email / Password or Magic-Link login via MailerSend  
   - Secure JWT-based sessions  
   - Session data stored in MongoDB Atlas  
 - **Environment Vars:**  
@@ -137,8 +138,8 @@ _All costs in CAD_
 
 ## ✉️ Email Delivery
 
-### **SendGrid**
-- **Tier:** Free (100 emails / day)  
+### **MailerSend**
+- **Tier:** Free (12,000 emails / month)  
 - **Purpose:**  
   - Contact form submissions  
   - Booking confirmations & reminders  
@@ -181,7 +182,7 @@ _All costs in CAD_
 | Hosting | Vercel | $0 | $0 | Arvado |
 | Database | MongoDB Atlas (M0) | $0 | $0 | Arvado |
 | Auth | Auth.js (NextAuth) | $0 | $0 | Arvado |
-| Email | SendGrid | $0 | $0 | Arvado |
+| Email | MailerSend | $0 | $0 | Arvado |
 | SMS | Twilio | ~$10–15 | ~$120–180 | Arvado |
 | Domain | Namecheap / Porkbun | — | ~$20 | Client |
 | Mailbox | Zoho / ImprovMX | $0–3 | ~$0–36 | Client |
@@ -195,14 +196,14 @@ _All costs in CAD_
 |--------|------|-----------|
 | 1 | Deploy public website on Vercel | ✅ Done |
 | 2 | Integrate MongoDB Atlas + NextAuth | Week 1–2 |
-| 3 | Connect SendGrid (email & magic links) | Week 2 |
+| 3 | Connect MailerSend (email & magic links) | Week 2 |
 | 4 | Configure Twilio (SMS) | Week 3 |
 | 5 | Build Admin Dashboard (schedule + clients + analytics) | Week 3–5 |
 
 ---
 
 ## 🧭 Ownership & Security Policy
-- All infrastructure (Vercel, Atlas, SendGrid, Twilio) managed under **Arvado organization**.  
+- All infrastructure (Vercel, Atlas, MailerSend, Twilio) managed under **Arvado organization**.  
 - Each client receives **isolated projects / API keys / sub-accounts**.  
 - Client owns:  
   - Domain & DNS  
